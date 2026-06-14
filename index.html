@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>أساطير النصل</title>
+
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@700&family=Cairo:wght@400;600;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div id="app">
+    <!-- portrait: ask to rotate to landscape -->
+    <div class="rotate-prompt">
+      <div class="rp-inner"><div class="rp-icon">🔄</div><p>أدِر هاتفك أفقياً للّعب</p></div>
+    </div>
+
+    <div class="phone">
+      <!-- ===== LEFT NAV RAIL ===== -->
+      <nav class="railnav">
+        <div class="rail-power"><span class="rp-num">{{ partyPower }}</span><span class="rp-cap">قوة</span></div>
+        <button v-for="t in tabs" :key="t.key" :class="['rail-tab',{active: state.tab===t.key}]" @click="state.tab=t.key">
+          <span class="rt-ic">{{ t.icon }}</span>
+          <span class="rt-lb">{{ t.label }}</span>
+        </button>
+        <button class="rail-sound icon-btn" :aria-label="state.settings.sound ? 'كتم الصوت' : 'تشغيل الصوت'" @click="toggleSound">{{ state.settings.sound ? '🔊' : '🔇' }}</button>
+      </nav>
+
+      <!-- ===== STAGE (hud + content) ===== -->
+      <div class="stage">
+        <header class="hud">
+          <span class="brand">أساطير النصل</span>
+          <div class="hud-mats">
+            <span class="res-chip">⛓️ {{ state.materials.iron }}</span>
+            <span class="res-chip">🔷 {{ state.materials.crystal }}</span>
+            <span class="res-chip">💠 {{ state.materials.essence }}</span>
+          </div>
+          <div class="currencies">
+            <span class="coin gold">🪙 {{ state.player.gold }}</span>
+            <span class="coin gem">💎 {{ state.player.gems }}</span>
+          </div>
+        </header>
+
+        <main class="content">
+
+          <!-- ---------- DUNGEONS ---------- -->
+          <section v-show="state.tab==='dungeons'" class="panel">
+
+            <!-- combat (relay) -->
+            <div v-if="state.combat.active" class="combat">
+              <div class="hpbar">
+                <div class="hp-top">
+                  <span class="hp-name">{{ state.combat.enemy.name }}
+                    <span class="ebadge sm" :style="{background: elementColor(state.combat.enemy.element)}">{{ state.combat.enemy.element }}</span>
+                  </span>
+                  <span class="hp-num">{{ state.combat.enemy.hp }} / {{ state.combat.enemy.maxHp }}</span>
+                </div>
+                <div class="hp-track"><div class="hp-fill foe" :class="{low: state.combat.enemy.hp < state.combat.enemy.maxHp*0.3}" :style="{width: pct(state.combat.enemy.hp, state.combat.enemy.maxHp)}"></div></div>
+              </div>
+
+              <div class="arena">
+                <div class="lead">
+                  <div class="knight" :style="heroVars(activeHero)">
+                    <div class="aura"></div>
+                    <div class="legs"></div>
+                    <div class="body"><div class="pauldron left"></div><div class="pauldron right"></div><div class="emblem"></div></div>
+                    <div class="weapon"><div class="blade"></div><div class="guard"></div><div class="hilt"></div></div>
+                    <div class="helmet"><div class="crest"></div><div class="visor"></div></div>
+                  </div>
+                </div>
+
+                <div class="vs">⚔</div>
+
+                <div class="monster" :style="enemyVars">
+                  <div class="m-aura"></div>
+                  <div class="m-wing left"></div><div class="m-wing right"></div>
+                  <div class="m-body"></div>
+                  <div class="m-head"><div class="m-horn left"></div><div class="m-horn right"></div><div class="m-eye left"></div><div class="m-eye right"></div></div>
+                </div>
+
+                <div v-for="f in state.floaters" :key="f.id" class="floater" :style="floaterStyle(f)">{{ f.text }}</div>
+              </div>
+
+              <!-- relay roster (order + hp) -->
+              <div class="roster">
+                <div v-for="(h,i) in state.heroes" :key="h.id" class="rtoken" :class="{active: isActive(i) && !state.combat.result, down: state.combat.hp[i]<=0}">
+                  <span class="rt-dot" :style="{background: setDot(h)}"></span>
+                  <div class="rt-body">
+                    <span class="rt-name">#{{ i+1 }} {{ heroName(h) }}<small v-if="isActive(i) && !state.combat.result"> ⚔</small></span>
+                    <div class="hp-track sm"><div class="hp-fill hero" :style="{width: pct(state.combat.hp[i], heroMax(i))}"></div></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="combat-bar" v-if="!state.combat.result">
+                <div class="cb-info">
+                  <span class="turn-ind" :class="state.combat.turn">{{ state.combat.turn==='player' ? '⚔️ دورك' : '⏳ العدو…' }}</span>
+                  <span class="cb-log">{{ lastLog[lastLog.length-1] }}</span>
+                </div>
+                <button class="btn-primary atk" :disabled="state.combat.turn!=='player' || state.combat.busy" @click="onAttack">هجوم!</button>
+              </div>
+
+              <transition name="fade">
+                <div v-if="state.combat.result" class="result-overlay">
+                  <div class="result-card" :class="state.combat.result">
+                    <template v-if="state.combat.result==='win'">
+                      <div class="res-emoji">🏆</div>
+                      <h2>النصر!</h2>
+                      <p class="res-reward">+{{ state.combat.reward.gold }} 🪙 · +{{ state.combat.reward.amt }} {{ matIcon(state.combat.reward.matType) }} {{ matName(state.combat.reward.matType) }}</p>
+                      <button class="btn-primary" @click="closeCombat">متابعة</button>
+                    </template>
+                    <template v-else>
+                      <div class="res-emoji">💀</div>
+                      <h2>الهزيمة</h2>
+                      <p class="res-reward muted">سقط فريقك. رقِّ عتادك ثم عُد.</p>
+                      <button class="btn-primary" @click="retryDungeon">إعادة المحاولة</button>
+                      <button class="btn-secondary" @click="closeCombat">انسحاب</button>
+                    </template>
+                  </div>
+                </div>
+              </transition>
+            </div>
+
+            <!-- dungeon list -->
+            <template v-else>
+              <h2 class="inv-title">الزنزانات</h2>
+              <p class="hint">قوة فريقك: <b style="color:var(--gold-soft)">{{ partyPower }}</b> — الأصعب يمنح ذهباً أكثر ومادة أندر.</p>
+              <div class="dungeon-list">
+                <button v-for="d in dungeons" :key="d.id" class="dungeon-card" :class="{locked: !isUnlocked(d)}" :disabled="!isUnlocked(d)" @click="enterDungeon(d)">
+                  <span class="dg-dot" :style="{background: elementColor(d.element), color: elementColor(d.element)}"></span>
+                  <div class="dg-main">
+                    <span class="dg-name">{{ d.nameAr }} <small>· صعوبة {{ d.id }}</small></span>
+                    <span class="dg-meta">{{ d.enemy.name }} · ◆ {{ d.element }}</span>
+                    <span class="dg-reward">🪙 {{ d.gold[0] }}–{{ d.gold[1] }} · {{ matIcon(d.mat.type) }} {{ d.mat.amt[0] }}–{{ d.mat.amt[1] }}</span>
+                  </div>
+                  <span v-if="isUnlocked(d)" class="dg-power" :class="{warn: partyPower < d.power}">⚔ {{ d.power }}</span>
+                  <span v-else class="dg-lock">🔒</span>
+                </button>
+              </div>
+            </template>
+          </section>
+
+          <!-- ---------- PARTY ---------- -->
+          <section v-show="state.tab==='party'" class="panel">
+            <h2 class="inv-title">الفريق <small class="sub-note">— ترتيب القتال: الأول، ثم التالي عند سقوطه</small></h2>
+            <div class="hero-grid">
+              <div v-for="(h,i) in state.heroes" :key="h.id" class="hero-card">
+                <div class="hc-top">
+                  <div class="hero-slot sm">
+                    <div class="knight" :style="heroVars(h)">
+                      <div class="aura"></div>
+                      <div class="legs"></div>
+                      <div class="body"><div class="pauldron left"></div><div class="pauldron right"></div><div class="emblem"></div></div>
+                      <div class="weapon"><div class="blade"></div><div class="guard"></div><div class="hilt"></div></div>
+                      <div class="helmet"><div class="crest"></div><div class="visor"></div></div>
+                    </div>
+                  </div>
+                  <span class="hc-order">#{{ i+1 }}</span>
+                </div>
+                <div class="hc-info">
+                  <span class="hc-name" :style="{color: setColor(h)}">{{ heroName(h) }}<b v-if="h.set && h.set.level" class="plus-inline"> +{{ h.set.level }}</b></span>
+                  <span class="hc-sub">رتبة {{ h.level }} · <i :style="{color: elementColor(heroEl(h))}">◆ {{ heroEl(h) }}</i> · {{ elementTrait(heroEl(h)) }}</span>
+                  <div class="hc-stats">⚔ {{ hs(i).atk }} · 🛡 {{ hs(i).def }} · ❤ {{ hs(i).hp }} · <b style="color:var(--gold-soft)">قوة {{ heroPower(i) }}</b></div>
+                  <div class="hc-actions">
+                    <button class="mini-btn" :disabled="!canEnhance(h)" @click="enhanceHeroSet(i)">رقِّ العتاد · {{ enhanceLabel(h) }}</button>
+                    <button class="mini-btn" :disabled="!canUpgradeHero(h)" @click="upgradeHero(i)">رقِّ البطل · {{ heroUpLabel(h) }}</button>
+                    <button class="mini-btn alt" @click="openSwap(i)">بدّل العتاد</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <transition name="fade">
+              <div v-if="state.swapIdx!==null" class="result-overlay" @click.self="closeSwap">
+                <div class="swap-card">
+                  <h3 class="swap-title">اختر طقماً للبطل</h3>
+                  <div v-if="state.sets.length===0" class="placeholder small"><p>لا أطقم في المخزن. اصنع طقماً من «التصنيع».</p></div>
+                  <div v-else class="set-grid">
+                    <div v-for="s in state.sets" :key="s.id" class="set-card" :style="{borderColor:s.rarityColor}" @click="equipFromSwap(s)">
+                      <div class="set-mini" :style="{background:'radial-gradient(circle at 50% 35%,'+s.colors.accent+','+s.colors.primary+' 60%,'+s.colors.secondary+')'}"></div>
+                      <span class="set-name" :style="{color:s.rarityColor}">{{ s.name }}<b v-if="s.level"> +{{ s.level }}</b></span>
+                      <span class="set-meta" :style="{color: elementColor(s.element)}">◆ {{ s.element }}</span>
+                    </div>
+                  </div>
+                  <button class="btn-secondary" @click="closeSwap">إغلاق</button>
+                </div>
+              </div>
+            </transition>
+          </section>
+
+          <!-- ---------- CRAFT ---------- -->
+          <section v-show="state.tab==='craft'" class="panel">
+            <h2 class="inv-title">التصنيع</h2>
+            <div class="craft-cols">
+              <div class="craft-left">
+                <p class="lbl">المستوى</p>
+                <div class="tier-pick">
+                  <button v-for="t in tiers" :key="t.tier" :class="['tier-btn',{on: state.craftTier===t.tier}]" @click="state.craftTier=t.tier">
+                    <span class="tier-dot" :style="{background: ({common:'#9aa0b5',rare:'#45a6ff',epic:'#c77dff',legendary:'#f5c542'})[t.rarity]}"></span>
+                    <span>{{ t.nameAr }}</span>
+                  </button>
+                </div>
+
+                <p class="lbl">العنصر</p>
+                <div class="el-pick">
+                  <button v-for="el in elements" :key="el" :class="['el-btn',{on: state.craftElement===el}]" :style="state.craftElement===el ? {borderColor: elementColor(el), color: elementColor(el)} : {}" @click="state.craftElement=el">
+                    <span class="el-dot" :style="{background: elementColor(el)}"></span>{{ el }}
+                  </button>
+                </div>
+
+                <div class="forge-preview">
+                  <div class="prev-row"><span>الندرة</span><b :style="{color: ({common:'#9aa0b5',rare:'#45a6ff',epic:'#c77dff',legendary:'#f5c542'})[tierObj.rarity]}">{{ tierObj.nameAr }}</b></div>
+                  <div class="prev-row"><span>الميزة</span><b :style="{color: elementColor(state.craftElement)}">{{ elementTrait(state.craftElement) }}</b></div>
+                  <div class="prev-cost"><span>التكلفة</span><b :class="{poor: !canCraft}">{{ costLabel(craftCostObj) }}</b></div>
+                </div>
+
+                <button class="btn-primary" :disabled="!canCraft" @click="doCraft">⚒️ اصنع طقماً</button>
+
+                <transition name="pop">
+                  <div v-if="state.craftResult" class="forge-result">
+                    <span class="fr-title">⚒️ طقم جديد</span>
+                    <span class="fr-line" :style="{color: state.craftResult.rarityColor}">{{ state.craftResult.name }}</span>
+                    <span class="fr-gains">◆ {{ state.craftResult.element }} · ⚔ {{ state.craftResult.baseStats.atk }} · 🛡 {{ state.craftResult.baseStats.def }} · ❤ {{ state.craftResult.baseStats.hp }}</span>
+                  </div>
+                </transition>
+              </div>
+
+              <div class="craft-right">
+                <h3 class="forge-sub">المخزن — جهّزها من «الفريق»</h3>
+                <div v-if="state.sets.length===0" class="placeholder small"><p>لا أطقم بعد. اصنع طقماً.</p></div>
+                <div v-else class="set-grid">
+                  <div v-for="s in state.sets" :key="s.id" class="set-card display" :style="{borderColor:s.rarityColor}">
+                    <div class="set-mini" :style="{background:'radial-gradient(circle at 50% 35%,'+s.colors.accent+','+s.colors.primary+' 60%,'+s.colors.secondary+')'}"></div>
+                    <span class="set-name" :style="{color:s.rarityColor}">{{ s.name }}<b v-if="s.level"> +{{ s.level }}</b></span>
+                    <span class="set-meta" :style="{color: elementColor(s.element)}">◆ {{ s.element }}</span>
+                  </div>
+                </div>
+                <button class="reset-btn" :class="{armed: resetArmed}" @click="resetGame">{{ resetArmed ? '⚠️ اضغط للتأكيد' : '↺ تصفير الحفظ' }}</button>
+              </div>
+            </div>
+          </section>
+
+          <!-- ---------- MARKET ---------- -->
+          <section v-show="state.tab==='market'" class="panel">
+            <div class="market-head">
+              <h2 class="inv-title">السوق</h2>
+              <div class="gem-balance">💎 {{ state.player.gems }}</div>
+              <div class="mk-subtabs">
+                <button :class="['mk-subtab',{on: state.marketTab==='shop'}]" @click="state.marketTab='shop'">المتجر</button>
+                <button :class="['mk-subtab',{on: state.marketTab==='trade'}]" @click="state.marketTab='trade'">التبادل</button>
+              </div>
+            </div>
+
+            <!-- SHOP -->
+            <div v-show="state.marketTab==='shop'">
+              <div class="mk-bar">
+                <span class="mk-note">🔄 يتجدّد المتجر يومياً — العتاد يُشترى بالجواهر فقط</span>
+                <button class="mini-btn alt" :disabled="state.player.gems < rerollCost" @click="rerollMarket">تحديث فوري · 💎{{ rerollCost }}</button>
+              </div>
+
+              <div v-if="state.market.featured" class="featured" :class="{sold: state.market.featured.sold}" :style="{borderColor: state.market.featured.rarityColor}">
+                <span class="ft-badge">مميّز · محدود</span>
+                <div class="ft-art" :style="{background: setBg(state.market.featured)}"></div>
+                <div class="ft-info">
+                  <span class="ft-name" :style="{color: state.market.featured.rarityColor}">{{ state.market.featured.name }}</span>
+                  <span class="ft-sub"><i :style="{color: elementColor(state.market.featured.element)}">◆ {{ state.market.featured.element }}</i> · {{ elementTrait(state.market.featured.element) }}</span>
+                  <span class="ft-stats">⚔ {{ state.market.featured.baseStats.atk }} · 🛡 {{ state.market.featured.baseStats.def }} · ❤ {{ state.market.featured.baseStats.hp }}</span>
+                </div>
+                <button class="buy-btn" :disabled="state.market.featured.sold || state.player.gems < state.market.featured.gemCost" @click="openBuy(state.market.featured)">
+                  {{ state.market.featured.sold ? 'نفد' : ('💎 ' + state.market.featured.gemCost) }}
+                </button>
+              </div>
+
+              <h3 class="forge-sub">معروضات اليوم</h3>
+              <div class="offer-grid">
+                <div v-for="o in state.market.offers" :key="o.id" class="offer-card" :class="{sold: o.sold}" :style="{borderColor: o.rarityColor}">
+                  <div class="set-mini" :style="{background: setBg(o)}"></div>
+                  <span class="set-name" :style="{color: o.rarityColor}">{{ o.name }}</span>
+                  <span class="set-meta" :style="{color: elementColor(o.element)}">◆ {{ o.element }}</span>
+                  <span class="of-stats">⚔{{ o.baseStats.atk }} 🛡{{ o.baseStats.def }} ❤{{ o.baseStats.hp }}</span>
+                  <button class="buy-btn sm" :disabled="o.sold || state.player.gems < o.gemCost" @click="openBuy(o)">{{ o.sold ? 'نفد' : ('💎 ' + o.gemCost) }}</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- TRADE -->
+            <div v-show="state.marketTab==='trade'">
+              <h3 class="forge-sub">بدّل مواردك بجواهر</h3>
+              <div class="ex-list">
+                <div v-for="ex in exchanges" :key="ex.id" class="ex-row">
+                  <span class="ex-give">{{ exGive(ex) }}</span>
+                  <span class="ex-arrow">←</span>
+                  <span class="ex-get">💎 {{ ex.gem }}</span>
+                  <button class="mini-btn" :disabled="!canExchange(ex)" @click="doExchange(ex)">بدّل</button>
+                </div>
+              </div>
+
+              <h3 class="forge-sub">بِع أطقمك الفائضة</h3>
+              <div v-if="state.sets.length===0" class="placeholder small"><p>لا أطقم في المخزن للبيع.</p></div>
+              <div v-else class="sell-list">
+                <div v-for="s in state.sets" :key="s.id" class="sell-row" :style="{borderColor: s.rarityColor}">
+                  <div class="set-mini xs" :style="{background: setBg(s)}"></div>
+                  <div class="sell-info">
+                    <span class="set-name" :style="{color: s.rarityColor}">{{ s.name }}<b v-if="s.level"> +{{ s.level }}</b></span>
+                    <span class="set-meta" :style="{color: elementColor(s.element)}">◆ {{ s.element }}</span>
+                  </div>
+                  <button class="mini-btn alt" @click="sellSet(s)">بِع · 💎{{ sellGems(s) }}</button>
+                </div>
+              </div>
+            </div>
+
+            <transition name="fade">
+              <div v-if="state.buyTarget" class="result-overlay" @click.self="closeBuy">
+                <div class="buy-card" :style="{borderColor: state.buyTarget.rarityColor}">
+                  <h3 class="swap-title">تأكيد الشراء</h3>
+                  <div class="buy-preview">
+                    <div class="set-mini lg" :style="{background: setBg(state.buyTarget)}"></div>
+                    <span class="set-name" :style="{color: state.buyTarget.rarityColor}">{{ state.buyTarget.name }}</span>
+                    <span class="set-meta" :style="{color: elementColor(state.buyTarget.element)}">◆ {{ state.buyTarget.element }} · {{ elementTrait(state.buyTarget.element) }}</span>
+                    <span class="buy-stats">⚔ {{ state.buyTarget.baseStats.atk }} · 🛡 {{ state.buyTarget.baseStats.def }} · ❤ {{ state.buyTarget.baseStats.hp }}</span>
+                  </div>
+                  <div class="buy-cost">التكلفة: <b>💎 {{ state.buyTarget.gemCost }}</b></div>
+                  <div class="buy-actions">
+                    <button class="btn-primary" :disabled="state.player.gems < state.buyTarget.gemCost" @click="confirmBuy">تأكيد الشراء</button>
+                    <button class="btn-secondary" @click="closeBuy">إلغاء</button>
+                  </div>
+                </div>
+              </div>
+            </transition>
+          </section>
+
+        </main>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/constants.js"></script>
+  <script src="js/gear.js"></script>
+  <script src="js/battle.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/persist.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

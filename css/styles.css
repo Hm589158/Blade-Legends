@@ -1,0 +1,988 @@
+    /* =========================================================
+       DESIGN TOKENS
+       ========================================================= */
+    :root{
+      --bg-0:#0a0712;        /* obsidian            */
+      --bg-1:#160f2a;        /* deep violet         */
+      --bg-2:#221634;        /* raised panel        */
+      --bg-3:#2c1d44;        /* panel highlight     */
+      --gold:#e8b94a;        /* illumination        */
+      --gold-soft:#f5d98a;
+      --gold-deep:#8a6418;
+      --ink:#ece7ff;         /* primary text        */
+      --muted:#9a93b8;       /* secondary text      */
+      --line:rgba(232,185,74,.22); /* gilded hairline */
+
+      --el-fire:#ff5a3c; --el-water:#3ba3ff; --el-earth:#c39a52;
+      --el-air:#74e0a8;  --el-spirit:#c77dff;
+
+      --rar-common:#9aa0b5; --rar-rare:#45a6ff;
+      --rar-epic:#c77dff;   --rar-legendary:#f5c542;
+    }
+
+    *{box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent;}
+    html,body{height:100%;}
+    body{
+      font-family:"Cairo",system-ui,sans-serif;
+      color:var(--ink);
+      background:#000;
+      display:flex; justify-content:center;
+      overflow:hidden;
+    }
+
+    /* =========================================================
+       PHONE SHELL (portrait)
+       ========================================================= */
+    .phone{
+      position:relative;
+      width:100%; max-width:430px; height:100dvh; max-height:932px;
+      display:flex; flex-direction:column;
+      overflow:hidden;
+      background:
+        radial-gradient(120% 60% at 50% -8%, #2a1750 0%, transparent 55%),
+        radial-gradient(90% 50% at 50% 108%, #1a0f33 0%, transparent 55%),
+        linear-gradient(180deg, var(--bg-1) 0%, var(--bg-0) 100%);
+    }
+    /* faint star vignette */
+    .phone::before{
+      content:""; position:absolute; inset:0; pointer-events:none; opacity:.5;
+      background:
+        radial-gradient(1px 1px at 20% 30%, rgba(255,255,255,.5), transparent),
+        radial-gradient(1px 1px at 80% 18%, rgba(255,255,255,.4), transparent),
+        radial-gradient(1px 1px at 62% 42%, rgba(255,255,255,.35), transparent),
+        radial-gradient(1px 1px at 35% 12%, rgba(255,255,255,.3), transparent);
+    }
+
+    /* =========================================================
+       TOP BAR
+       ========================================================= */
+    .topbar{
+      position:relative; z-index:2;
+      display:flex; align-items:center; justify-content:space-between;
+      padding:14px 16px 12px;
+      border-bottom:1px solid var(--line);
+      background:linear-gradient(180deg, rgba(34,22,52,.85), transparent);
+    }
+    .brand{
+      position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+      font-family:"Amiri",serif; font-size:19px; letter-spacing:.5px;
+      color:var(--gold-soft); text-shadow:0 0 12px rgba(232,185,74,.4);
+      pointer-events:none; white-space:nowrap;
+    }
+    .level-badge{
+      display:flex; flex-direction:column; align-items:center;
+      width:44px; height:44px; border-radius:50%;
+      justify-content:center;
+      background:radial-gradient(circle at 50% 30%, var(--bg-3), var(--bg-2));
+      border:1.5px solid var(--gold); box-shadow:0 0 14px rgba(232,185,74,.25);
+    }
+    .level-badge .lvl-num{font-weight:800; font-size:17px; line-height:1; color:var(--gold-soft);}
+    .level-badge .lvl-cap{font-size:8px; color:var(--muted); margin-top:1px;}
+    .currencies{display:flex; flex-direction:column; gap:5px; align-items:flex-end;}
+    .coin{
+      font-size:13px; font-weight:600;
+      padding:3px 9px; border-radius:11px;
+      background:rgba(10,7,18,.55); border:1px solid var(--line);
+      min-width:74px; text-align:center;
+    }
+    .coin.gold{color:var(--gold-soft);}
+    .coin.gem{color:#a8d8ff;}
+
+    /* =========================================================
+       CONTENT / PANELS
+       ========================================================= */
+    .content{position:relative; z-index:1; flex:1; overflow-y:auto; overflow-x:hidden;}
+    .panel{padding:8px 16px 18px; min-height:100%;}
+
+    /* ---------- ARENA (the hero) ---------- */
+    .arena{
+      direction:ltr; /* keep monster left / knight right regardless of RTL page */
+      position:relative;
+      display:flex; align-items:flex-end; justify-content:space-around;
+      height:300px; margin:6px 0 4px;
+      border-radius:18px;
+      background:
+        radial-gradient(80% 50% at 50% 100%, rgba(124,77,255,.18), transparent 70%),
+        linear-gradient(180deg, rgba(10,7,18,.0) 30%, rgba(10,7,18,.55) 100%);
+      overflow:hidden;
+    }
+    /* distant horizon glow + ground line */
+    .arena::before{
+      content:""; position:absolute; left:0; right:0; bottom:0; height:46%;
+      background:linear-gradient(180deg, transparent, rgba(124,77,255,.10) 60%, rgba(232,185,74,.06));
+      border-top:1px solid rgba(232,185,74,.10);
+    }
+
+    /* =========================================================
+       KNIGHT  — pure CSS, layered absolute divs
+       Colors driven by CSS custom props from equipped gear.
+       ========================================================= */
+    .knight{position:relative; width:150px; height:210px; transform-origin:bottom center;}
+
+    .knight .aura{
+      position:absolute; left:50%; top:34px; width:170px; height:170px;
+      transform:translateX(-50%); border-radius:50%; z-index:0;
+      background:radial-gradient(circle, var(--aura-col) 0%, transparent 62%);
+      box-shadow:0 0 42px var(--aura-col); opacity:.7;
+    }
+    .knight .legs{
+      position:absolute; left:50%; bottom:0; width:66px; height:72px;
+      transform:translateX(-50%); z-index:1; border-radius:4px;
+      background:linear-gradient(#2c2845, #14121f);
+      clip-path:polygon(0 0,100% 0,86% 100%,60% 88%,50% 100%,40% 88%,14% 100%);
+    }
+    .knight .shield{
+      position:absolute; left:-10px; top:66px; width:48px; height:64px; z-index:2;
+      background:linear-gradient(150deg, rgba(255,255,255,.18), transparent 42%),
+                 linear-gradient(var(--chest-sec), #100e1a);
+      clip-path:polygon(50% 0,100% 18%,100% 60%,50% 100%,0 60%,0 18%);
+      box-shadow:inset 0 0 0 2px var(--chest-acc), 0 4px 10px rgba(0,0,0,.55);
+    }
+    .knight .body{
+      position:absolute; left:50%; top:58px; width:110px; height:98px;
+      transform:translateX(-50%); z-index:3;
+      background:linear-gradient(160deg, rgba(255,255,255,.28), transparent 38%),
+                 linear-gradient(var(--chest), var(--chest-sec));
+      clip-path:polygon(50% 0,78% 8%,100% 30%,92% 100%,50% 92%,8% 100%,0 30%,22% 8%);
+      box-shadow:0 0 var(--glow-c) var(--chest-acc),
+                 inset 0 6px 10px rgba(255,255,255,.18),
+                 inset 0 -8px 12px rgba(0,0,0,.42);
+    }
+    .knight .pauldron{
+      position:absolute; top:-6px; width:38px; height:30px; z-index:4;
+      border-radius:50% 50% 40% 40%;
+      background:linear-gradient(var(--chest-acc), var(--chest));
+      box-shadow:0 0 var(--glow-c) var(--chest-acc);
+    }
+    .knight .pauldron.left{left:-13px;}
+    .knight .pauldron.right{right:-13px;}
+    .knight .emblem{
+      position:absolute; left:50%; top:34px; width:20px; height:20px; z-index:5;
+      transform:translateX(-50%) rotate(45deg);
+      background:var(--el-col); box-shadow:0 0 10px var(--el-col);
+      border:1px solid rgba(255,255,255,.4);
+    }
+    .knight .weapon{position:absolute; right:-8px; top:38px; width:32px; height:152px; z-index:4;}
+    .knight .blade{
+      position:absolute; left:9px; top:0; width:12px; height:106px;
+      background:linear-gradient(90deg, rgba(255,255,255,.7), var(--weapon-acc) 42%, var(--weapon));
+      clip-path:polygon(50% 0,100% 12%,100% 100%,0 100%,0 12%);
+      box-shadow:0 0 var(--glow-w) var(--weapon-acc);
+    }
+    .knight .guard{
+      position:absolute; left:-2px; top:102px; width:34px; height:10px; border-radius:3px;
+      background:linear-gradient(var(--weapon-acc), var(--weapon));
+    }
+    .knight .hilt{
+      position:absolute; left:10px; top:110px; width:10px; height:34px; border-radius:4px;
+      background:linear-gradient(#5a4a2a, #2a2114);
+    }
+    .knight .helmet{
+      position:absolute; left:50%; top:6px; width:64px; height:66px; z-index:6;
+      transform:translateX(-50%);
+      background:linear-gradient(160deg, rgba(255,255,255,.3), transparent 45%),
+                 linear-gradient(var(--helmet), var(--helmet-acc));
+      clip-path:polygon(20% 0,80% 0,100% 35%,92% 78%,70% 100%,30% 100%,8% 78%,0 35%);
+      box-shadow:0 0 var(--glow-h) var(--helmet-acc),
+                 inset 0 4px 6px rgba(255,255,255,.25),
+                 inset 0 -6px 8px rgba(0,0,0,.4);
+    }
+    .knight .crest{
+      position:absolute; left:50%; top:-16px; width:14px; height:26px;
+      transform:translateX(-50%);
+      background:linear-gradient(var(--el-col), transparent);
+      clip-path:polygon(50% 0,100% 30%,80% 100%,50% 80%,20% 100%,0 30%);
+    }
+    .knight .visor{
+      position:absolute; left:50%; top:36px; width:42px; height:9px;
+      transform:translateX(-50%); background:#08070f; border-radius:3px;
+    }
+    .knight .visor::after{
+      content:""; position:absolute; inset:2px 5px;
+      background:var(--el-col); border-radius:2px; filter:blur(.6px); opacity:.95;
+    }
+
+    /* =========================================================
+       MONSTER — pure CSS
+       ========================================================= */
+    .monster{position:relative; width:168px; height:198px; transform-origin:bottom center;}
+    .monster .m-aura{
+      position:absolute; left:50%; top:28px; width:188px; height:188px;
+      transform:translateX(-50%); border-radius:50%; z-index:0;
+      background:radial-gradient(circle, var(--m-el) 0%, transparent 60%);
+      box-shadow:0 0 50px var(--m-el); opacity:.65;
+    }
+    .monster .m-wing{position:absolute; top:48px; width:72px; height:104px; z-index:1; opacity:.85;}
+    .monster .m-wing.left{left:-32px; background:linear-gradient(var(--m-sec), transparent);
+      clip-path:polygon(100% 0,100% 100%,0 58%,42% 30%);}
+    .monster .m-wing.right{right:-32px; background:linear-gradient(var(--m-sec), transparent);
+      clip-path:polygon(0 0,0 100%,100% 58%,58% 30%);}
+    .monster .m-body{
+      position:absolute; left:50%; top:60px; width:132px; height:130px;
+      transform:translateX(-50%); z-index:2;
+      background:linear-gradient(160deg, rgba(255,255,255,.16), transparent 38%),
+                 linear-gradient(var(--m-primary), var(--m-sec));
+      clip-path:polygon(50% 0,88% 18%,100% 70%,74% 100%,26% 100%,0 70%,12% 18%);
+      box-shadow:0 0 30px var(--m-acc), inset 0 -10px 16px rgba(0,0,0,.5);
+    }
+    .monster .m-head{
+      position:absolute; left:50%; top:18px; width:86px; height:72px;
+      transform:translateX(-50%); z-index:3;
+      background:linear-gradient(var(--m-primary), var(--m-sec));
+      clip-path:polygon(50% 0,82% 20%,100% 64%,72% 100%,28% 100%,0 64%,18% 20%);
+      box-shadow:0 0 22px var(--m-acc);
+    }
+    .monster .m-horn{position:absolute; top:-10px; width:16px; height:34px;
+      background:linear-gradient(var(--m-acc), var(--m-sec)); clip-path:polygon(50% 0,100% 100%,0 100%);}
+    .monster .m-horn.left{left:8px; transform:rotate(-18deg);}
+    .monster .m-horn.right{right:8px; transform:rotate(18deg);}
+    .monster .m-eye{position:absolute; top:36px; width:12px; height:15px; border-radius:50%;
+      background:var(--m-el); box-shadow:0 0 12px var(--m-el);}
+    .monster .m-eye.left{left:22px;}
+    .monster .m-eye.right{right:22px;}
+
+    /* VS marker */
+    .vs{
+      align-self:center; font-family:"Amiri",serif; font-weight:700;
+      font-size:22px; color:var(--gold); letter-spacing:1px;
+      text-shadow:0 0 14px rgba(232,185,74,.5); z-index:5; opacity:.9;
+    }
+
+    /* =========================================================
+       ENEMY INFO + PLAYER STATS
+       ========================================================= */
+    .enemy-info{
+      display:flex; align-items:center; justify-content:center; gap:10px;
+      margin:2px 0 12px;
+    }
+    .ename{font-family:"Amiri",serif; font-size:17px; color:var(--ink);}
+    .ebadge{font-size:11px; font-weight:600; color:#fff; padding:2px 10px; border-radius:10px;
+      box-shadow:0 0 12px currentColor;}
+
+    .stat-row{display:flex; gap:8px; margin-bottom:14px;}
+    .stat{
+      flex:1; display:flex; flex-direction:column; align-items:center; gap:1px;
+      padding:9px 4px; border-radius:13px;
+      background:rgba(34,22,52,.6); border:1px solid var(--line);
+    }
+    .stat > span{font-size:15px;}
+    .stat > b{font-size:17px; color:var(--gold-soft); line-height:1.1;}
+    .stat > small{font-size:9.5px; color:var(--muted);}
+
+    /* =========================================================
+       PRIMARY ACTION
+       ========================================================= */
+    .btn-primary{
+      width:100%; padding:15px; border:none; border-radius:15px; cursor:pointer;
+      font-family:"Cairo",sans-serif; font-weight:800; font-size:16.5px; color:#2a1c05;
+      background:linear-gradient(180deg, var(--gold-soft), var(--gold) 55%, var(--gold-deep));
+      box-shadow:0 6px 18px rgba(232,185,74,.32), inset 0 1px 0 rgba(255,255,255,.5);
+      letter-spacing:.3px; transition:transform .12s ease, filter .12s ease;
+    }
+    .btn-primary:active{transform:translateY(2px) scale(.99);}
+    .btn-primary:disabled{filter:saturate(.5) brightness(.8); cursor:default;}
+    .btn-primary:focus-visible{outline:3px solid var(--gold-soft); outline-offset:3px;}
+
+    /* =========================================================
+       DROP CARD (signature reveal)
+       ========================================================= */
+    .drop-card{
+      margin-top:14px; padding:14px 15px; border-radius:15px;
+      border:2px solid var(--gold); background:linear-gradient(180deg, var(--bg-2), var(--bg-1));
+      position:relative; overflow:hidden;
+    }
+    .drop-card::before{ /* gilded sheen */
+      content:""; position:absolute; inset:0; pointer-events:none;
+      background:linear-gradient(120deg, transparent 40%, rgba(255,255,255,.06) 50%, transparent 60%);
+    }
+    .drop-head{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:7px;}
+    .drop-name{font-family:"Amiri",serif; font-size:19px; line-height:1.2;}
+    .drop-rarity{font-size:10.5px; font-weight:700; color:#1a1226; padding:3px 9px; border-radius:9px; white-space:nowrap;}
+    .drop-lore{font-size:13px; color:var(--muted); line-height:1.7; margin-bottom:10px;}
+    .drop-stats{display:flex; flex-wrap:wrap; gap:8px 14px; font-size:13px; font-weight:600;}
+    .drop-stats > span{color:var(--ink);}
+
+    /* drop transition */
+    .pop-enter-active{transition:transform .35s cubic-bezier(.2,1.2,.4,1), opacity .35s ease;}
+    .pop-leave-active{transition:transform .2s ease, opacity .2s ease;}
+    .pop-enter-from{opacity:0; transform:translateY(18px) scale(.96);}
+    .pop-leave-to{opacity:0; transform:scale(.97);}
+
+    /* =========================================================
+       FORGE / INVENTORY
+       ========================================================= */
+    .placeholder{display:flex; flex-direction:column; align-items:center; justify-content:center;
+      text-align:center; gap:8px; height:60vh; color:var(--muted);}
+    .placeholder.small{height:auto; padding:48px 16px;}
+    .placeholder .ph-icon{font-size:46px; filter:drop-shadow(0 0 16px rgba(232,185,74,.3));}
+    .placeholder h2{font-family:"Amiri",serif; color:var(--gold-soft); font-size:24px;}
+    .placeholder p{font-size:13.5px; line-height:1.8; max-width:260px;}
+
+    .inv-title{font-family:"Amiri",serif; font-size:22px; color:var(--gold-soft); margin:8px 2px 14px;}
+    .inv-title small{font-size:14px; color:var(--muted); font-family:"Cairo";}
+    .inv-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:10px;}
+    .inv-card{
+      display:flex; flex-direction:column; align-items:center; gap:6px;
+      padding:10px 6px; border-radius:14px; cursor:pointer;
+      background:rgba(34,22,52,.55); border:1.5px solid var(--line); transition:transform .12s ease;
+    }
+    .inv-card:active{transform:scale(.96);}
+    .inv-mini{
+      width:54px; height:54px; border-radius:12px;
+      display:flex; align-items:center; justify-content:center;
+      border:1px solid rgba(255,255,255,.15);
+    }
+    .inv-slot{font-size:22px; filter:drop-shadow(0 1px 2px rgba(0,0,0,.6));}
+    .inv-name{font-family:"Amiri",serif; font-size:12.5px; text-align:center; line-height:1.3; height:32px; overflow:hidden;}
+    .inv-el{font-size:10.5px; font-weight:600;}
+
+    /* =========================================================
+       BOTTOM TAB BAR
+       ========================================================= */
+    .tabbar{
+      position:relative; z-index:2; display:flex;
+      border-top:1px solid var(--line); padding:8px 8px calc(8px + env(safe-area-inset-bottom));
+      background:linear-gradient(0deg, rgba(34,22,52,.92), rgba(34,22,52,.55));
+    }
+    .tab{
+      flex:1; display:flex; flex-direction:column; align-items:center; gap:3px;
+      padding:8px 0; background:none; border:none; cursor:pointer; color:var(--muted);
+      font-family:"Cairo",sans-serif; transition:color .15s ease;
+    }
+    .tab .tab-ic{font-size:21px; transition:transform .15s ease, filter .15s ease;}
+    .tab .tab-lb{font-size:11px; font-weight:600;}
+    .tab.active{color:var(--gold-soft);}
+    .tab.active .tab-ic{transform:translateY(-2px) scale(1.12); filter:drop-shadow(0 0 8px rgba(232,185,74,.55));}
+    .tab:focus-visible{outline:2px solid var(--gold-soft); outline-offset:-4px; border-radius:10px;}
+
+    /* loading state for the action */
+    .spin{display:inline-block; animation:spin 1s linear infinite;}
+    @keyframes spin{to{transform:rotate(360deg);}}
+
+    /* respect reduced motion */
+    @media (prefers-reduced-motion: reduce){
+      .spin{animation:none;}
+      .btn-primary,.tab .tab-ic,.inv-card{transition:none;}
+    }
+  
+
+/* =========================================================
+   PART 2 — battle: HP bars, turn UI, log, floaters, overlay
+   ========================================================= */
+.battle{position:relative;} /* positioning context for the result overlay */
+
+.hpbar{margin:6px 2px;}
+.hp-top{display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;}
+.hp-name{font-family:"Amiri",serif; font-size:14.5px; color:var(--ink); display:flex; align-items:center; gap:7px;}
+.hp-num{font-size:12px; color:var(--muted); font-weight:600;}
+.ebadge.sm{font-size:10px; padding:1px 8px; color:#fff;}
+.hp-track{height:11px; border-radius:7px; overflow:hidden;
+  background:rgba(10,7,18,.7); border:1px solid var(--line);}
+.hp-fill{height:100%; border-radius:7px; transition:width .45s cubic-bezier(.3,1,.4,1);}
+.hp-fill.foe{background:linear-gradient(90deg,#ff7a5c,#b0202e);}
+.hp-fill.hero{background:linear-gradient(90deg,#7cf0a8,#2bb673);}
+
+/* turn indicator */
+.turn-ind{text-align:center; font-weight:700; font-size:14px; padding:9px; margin:6px 0 12px;
+  border-radius:12px; border:1px solid var(--line); background:rgba(34,22,52,.55);}
+.turn-ind.player{color:var(--gold-soft); box-shadow:inset 0 0 0 1px rgba(232,185,74,.25);}
+.turn-ind.enemy{color:#ff9a8a;}
+
+/* secondary button */
+.btn-secondary{
+  width:100%; margin-top:10px; padding:12px; border-radius:13px; cursor:pointer;
+  font-family:"Cairo",sans-serif; font-weight:700; font-size:14.5px; color:var(--gold-soft);
+  background:rgba(34,22,52,.7); border:1px solid var(--line);
+  transition:transform .12s ease, filter .12s ease;
+}
+.btn-secondary:active{transform:translateY(2px) scale(.99);}
+.btn-secondary:disabled{filter:saturate(.4) brightness(.8); cursor:default;}
+.btn-secondary:focus-visible{outline:2px solid var(--gold-soft); outline-offset:2px;}
+
+/* battle log */
+.log{margin-top:12px; padding:10px 12px; border-radius:12px; min-height:64px;
+  background:rgba(10,7,18,.5); border:1px solid var(--line);
+  display:flex; flex-direction:column; justify-content:flex-end; gap:3px;}
+.log p{font-size:12.5px; color:var(--muted); line-height:1.5;}
+.log p:last-child{color:var(--ink);}
+
+/* floating damage numbers (rendered inside .arena) */
+.floater{position:absolute; font-weight:800; font-size:21px; pointer-events:none; z-index:9;
+  text-shadow:0 2px 6px rgba(0,0,0,.8); animation:floatUp .85s ease-out forwards;}
+@keyframes floatUp{
+  0%{opacity:0; transform:translateY(0) scale(.6);}
+  20%{opacity:1; transform:translateY(-12px) scale(1.15);}
+  100%{opacity:0; transform:translateY(-50px) scale(1);}
+}
+
+/* result overlay */
+.result-overlay{position:absolute; inset:0; z-index:20;
+  display:flex; align-items:center; justify-content:center; padding:24px;
+  background:rgba(8,6,16,.78); -webkit-backdrop-filter:blur(3px); backdrop-filter:blur(3px);}
+.result-card{width:100%; max-width:320px; text-align:center; padding:26px 20px 22px;
+  border-radius:20px; border:2px solid var(--gold);
+  background:linear-gradient(180deg,var(--bg-2),var(--bg-1));}
+.result-card.lose{border-color:#7a2230;}
+.res-emoji{font-size:54px; filter:drop-shadow(0 0 18px rgba(232,185,74,.5));}
+.result-card.lose .res-emoji{filter:drop-shadow(0 0 18px rgba(176,32,46,.5));}
+.result-card h2{font-family:"Amiri",serif; font-size:30px; margin:4px 0 10px; color:var(--gold-soft);}
+.result-card.lose h2{color:#ff8a7a;}
+.res-reward{font-size:16px; font-weight:700; color:var(--gold-soft); margin-bottom:14px;}
+.res-reward.muted{color:var(--muted); font-weight:600; font-size:14px;}
+.result-card .btn-primary{margin-top:4px;}
+.drop-card.mini{margin:0 0 16px; padding:11px 13px; text-align:right;}
+.drop-hint{font-size:11.5px; color:var(--muted); margin-top:6px; line-height:1.5;}
+
+/* fade transition for the overlay */
+.fade-enter-active,.fade-leave-active{transition:opacity .25s ease;}
+.fade-enter-from,.fade-leave-to{opacity:0;}
+
+@media (prefers-reduced-motion: reduce){
+  .floater{animation:none;}
+  .hp-fill,.btn-secondary{transition:none;}
+}
+
+/* =========================================================
+   PART 3 — forge (fusion) + gear badges
+   ========================================================= */
+.forge .inv-title{margin-bottom:12px;}
+.forge-bench{display:flex; align-items:center; justify-content:center; gap:10px; margin:4px 0 14px;}
+.forge-slot{flex:1; min-height:120px; border-radius:16px; border:1.5px dashed var(--line);
+  background:rgba(34,22,52,.5); display:flex; flex-direction:column; align-items:center;
+  justify-content:center; gap:6px; padding:10px 6px; cursor:default;
+  transition:border-color .2s ease, background .2s ease;}
+.forge-slot.filled{border-style:solid;}
+.forge-slot.base.filled{border-color:#ffd24a; background:rgba(232,185,74,.08);}
+.forge-slot.material.filled{border-color:#ff7a5c; background:rgba(255,122,92,.08);}
+.slot-cap{font-size:11px; color:var(--muted); font-weight:600;}
+.slot-empty{font-size:34px; color:var(--muted); opacity:.45; line-height:1;}
+.slot-mini{width:50px; height:50px; border-radius:12px; display:flex; align-items:center;
+  justify-content:center; border:1px solid rgba(255,255,255,.15);}
+.slot-name{font-family:"Amiri",serif; font-size:12.5px; text-align:center; line-height:1.3;}
+.slot-name b{color:var(--gold-soft);}
+.forge-anvil{font-size:26px; filter:drop-shadow(0 0 10px rgba(232,185,74,.4));}
+
+.forge-preview{border-radius:14px; border:1px solid var(--line); background:rgba(10,7,18,.45);
+  padding:8px 14px; margin-bottom:12px;}
+.prev-row,.prev-cost{display:flex; align-items:center; justify-content:space-between;
+  font-size:13.5px; padding:3px 0;}
+.prev-row span{color:var(--muted);}
+.prev-row .gain{color:#7cf0a8; font-weight:800;}
+.prev-cost{border-top:1px solid var(--line); margin-top:5px; padding-top:8px; color:var(--ink);}
+.prev-cost b{color:var(--gold-soft);}
+.prev-cost b.poor{color:#ff6a6a;}
+
+.forge-result{margin-top:12px; padding:12px 14px; border-radius:14px; text-align:center;
+  border:2px solid #7cf0a8; background:linear-gradient(180deg,var(--bg-2),var(--bg-1));
+  display:flex; flex-direction:column; gap:4px;}
+.forge-result.crit{border-color:var(--gold);}
+.fr-title{font-family:"Amiri",serif; font-size:17px; color:#7cf0a8;}
+.forge-result.crit .fr-title{color:var(--gold-soft);}
+.fr-line{font-size:13px; color:var(--ink);} .fr-line b{color:var(--gold-soft);}
+.fr-gains{font-size:12.5px; color:var(--muted);}
+
+.forge-sub{font-family:"Cairo",sans-serif; font-size:12.5px; color:var(--muted);
+  margin:16px 2px 10px; font-weight:700;}
+
+/* badges on inventory minis */
+.inv-mini{position:relative;}
+.plus-badge{position:absolute; top:-6px; right:-6px; font-size:10px; font-weight:800; color:#1a1226;
+  background:var(--gold-soft); border-radius:8px; padding:1px 5px; box-shadow:0 1px 4px rgba(0,0,0,.5);}
+.eq-badge{position:absolute; bottom:-5px; left:-5px; font-size:10px; font-weight:800; color:#06281a;
+  background:#7cf0a8; border-radius:50%; width:17px; height:17px; display:flex;
+  align-items:center; justify-content:center;}
+.lock-badge{position:absolute; top:-6px; left:-6px; font-size:11px;}
+.inv-card.sel{background:rgba(232,185,74,.1);}
+.inv-card.locked{opacity:.62;}
+.inv-card.equipped{box-shadow:inset 0 0 0 1px #7cf0a8;}
+.inv-tag{font-size:10.5px; font-weight:800; color:#1a1226; background:#ffd24a;
+  border-radius:8px; padding:1px 8px;}
+.inv-tag.mat{background:#ff7a5c; color:#2a0d05;}
+
+/* =========================================================
+   PARTS 4 & 5 — sound toggle, monster picker, inventory
+   controls, compare overlay, reset, low-HP pulse
+   ========================================================= */
+.top-right{display:flex; align-items:center; gap:8px;}
+.icon-btn{width:34px; height:34px; border-radius:50%; border:1px solid var(--line);
+  background:rgba(10,7,18,.5); color:var(--ink); font-size:15px; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; transition:transform .12s ease;}
+.icon-btn:active{transform:scale(.94);}
+.icon-btn:focus-visible{outline:2px solid var(--gold-soft); outline-offset:2px;}
+
+/* monster picker */
+.foe-pick{margin:2px 0 12px;}
+.foe-pick-cap{font-size:11px; color:var(--muted); font-weight:600; margin:0 2px 6px; display:block;}
+.foe-list{display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; scrollbar-width:none;}
+.foe-list::-webkit-scrollbar{display:none;}
+.foe-chip{flex:0 0 auto; display:flex; align-items:center; gap:6px; white-space:nowrap;
+  padding:7px 12px; border-radius:12px; cursor:pointer; font-family:"Cairo"; font-size:12.5px;
+  color:var(--ink); background:rgba(34,22,52,.6); border:1.5px solid transparent; transition:background .15s ease;}
+.foe-chip.active{background:rgba(34,22,52,.98); border-color:var(--line);}
+.foe-dot{width:9px; height:9px; border-radius:50%; box-shadow:0 0 8px currentColor;}
+
+/* inventory controls */
+.inv-controls{margin-bottom:12px; display:flex; flex-direction:column; gap:9px;}
+.seg{display:flex; background:rgba(10,7,18,.5); border:1px solid var(--line); border-radius:12px; overflow:hidden;}
+.seg-btn{flex:1; padding:8px 4px; border:none; background:none; cursor:pointer;
+  font-family:"Cairo"; font-size:12px; font-weight:700; color:var(--muted); transition:background .15s ease, color .15s ease;}
+.seg-btn.on{background:rgba(232,185,74,.16); color:var(--gold-soft);}
+.chips{display:flex; flex-wrap:wrap; gap:6px;}
+.chip{padding:5px 11px; border-radius:11px; border:1px solid var(--line); cursor:pointer;
+  background:rgba(34,22,52,.55); color:var(--muted); font-family:"Cairo"; font-size:12px; font-weight:600;}
+.chip.on{color:var(--gold-soft); border-color:var(--gold); background:rgba(232,185,74,.12);}
+.chip-sep{flex-basis:100%; height:0;}
+
+/* compare overlay card (reuses .result-overlay backdrop) */
+.compare-card{width:100%; max-width:330px; padding:18px; border-radius:18px;
+  border:2px solid var(--gold); background:linear-gradient(180deg,var(--bg-2),var(--bg-1));}
+.cmp-head{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:7px;}
+.plus-inline{color:var(--gold-soft);}
+.cmp-meta{font-size:12px; color:var(--muted); line-height:1.7; margin-bottom:12px;}
+.cmp-stats{display:flex; flex-direction:column; gap:6px; margin-bottom:16px;}
+.cmp-row{display:flex; align-items:center; gap:10px; font-size:14px;}
+.cmp-row span{flex:1; color:var(--muted);}
+.cmp-row b{color:var(--ink); min-width:46px; text-align:left;}
+.cmp-row i{font-style:normal; font-weight:800; font-size:12.5px; min-width:48px; text-align:left; color:var(--muted);}
+.cmp-row i.up{color:#7cf0a8;}
+.cmp-row i.down{color:#ff6a6a;}
+.cmp-actions{display:flex; gap:10px;}
+.cmp-actions .btn-primary,.cmp-actions .btn-secondary{margin-top:0;}
+
+/* reset save */
+.reset-btn{display:block; width:100%; margin:18px 0 4px; padding:10px; border-radius:12px;
+  background:none; border:1px solid var(--line); color:var(--muted); font-family:"Cairo";
+  font-size:12.5px; font-weight:600; cursor:pointer; transition:color .15s ease, border-color .15s ease;}
+.reset-btn.armed{border-color:#ff6a6a; color:#ff8a7a; background:rgba(255,106,106,.08);}
+
+/* polish: low-HP pulse */
+.hp-fill.low{animation:hpPulse 1s ease-in-out infinite;}
+@keyframes hpPulse{50%{filter:brightness(1.55);}}
+
+@media (prefers-reduced-motion: reduce){
+  .icon-btn:active{transform:none;}
+  .hp-fill.low{animation:none;}
+}
+
+/* =========================================================
+   PART 6 — REDESIGN: dungeons / party / craft / sets
+   Additive only. Reuses design tokens + .knight/.monster art.
+   ========================================================= */
+
+/* panels need a positioning context for floaters + overlays */
+.panel{position:relative;}
+
+/* ---------- resource bar (materials + sound) ---------- */
+.resbar{
+  position:relative; z-index:2;
+  display:flex; align-items:center; justify-content:space-between; gap:10px;
+  padding:2px 16px 8px;
+}
+.res-mats{display:flex; gap:7px; flex-wrap:wrap;}
+.res-chip{
+  font-size:12px; font-weight:600; color:var(--ink); line-height:1;
+  background:rgba(232,185,74,.08); border:1px solid var(--line);
+  border-radius:999px; padding:4px 9px;
+}
+
+/* ---------- combat: party of three vs enemy ---------- */
+.party{display:flex; align-items:flex-end; gap:4px;}
+.hero-slot{position:relative; width:62px; height:150px; flex:0 0 auto;}
+.hero-slot .knight{
+  position:absolute; bottom:0; left:50%; margin-left:-75px;
+  transform:scale(.42); transform-origin:bottom center;
+}
+.hero-slot.sm{height:112px;}
+.knight.mini.down{filter:grayscale(.85) brightness(.5); opacity:.55; transition:filter .3s ease, opacity .3s ease;}
+
+/* shrink the boss a touch so trio + boss share the row */
+.arena .monster{transform:scale(.9); transform-origin:bottom center;}
+
+/* enemy element pill, small */
+.ebadge.sm{font-size:9px; padding:1px 6px; border-radius:7px; color:#0a0712; font-weight:800;}
+
+/* party hp mini-bars under the arena */
+.party-hp{display:flex; gap:8px; margin:2px 2px 8px;}
+.php{flex:1; min-width:0;}
+.php-name{
+  display:block; font-size:10.5px; color:var(--muted); text-align:center;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-bottom:2px;
+}
+.php.down .php-name{color:#ff6a6a;}
+.hp-track.sm{height:7px;}
+
+/* ---------- dungeon list ---------- */
+.hint{font-size:12.5px; color:var(--muted); margin:0 2px 12px; line-height:1.7;}
+.dungeon-list{display:flex; flex-direction:column; gap:10px;}
+.dungeon-card{
+  display:flex; align-items:center; gap:11px; width:100%; text-align:right;
+  padding:12px 13px; border-radius:15px; cursor:pointer; color:var(--ink);
+  font-family:"Cairo"; border:1px solid var(--line);
+  background:linear-gradient(180deg,var(--bg-2),var(--bg-1));
+  transition:transform .12s ease, border-color .15s ease, box-shadow .15s ease;
+}
+.dungeon-card:not(.locked):active{transform:scale(.985);}
+.dungeon-card:not(.locked):hover{border-color:var(--gold); box-shadow:0 0 16px rgba(232,185,74,.12);}
+.dungeon-card.locked{opacity:.5; cursor:not-allowed;}
+.dg-dot{width:14px; height:14px; border-radius:50%; flex:0 0 auto; box-shadow:0 0 10px currentColor;}
+.dg-main{display:flex; flex-direction:column; gap:2px; flex:1; min-width:0; text-align:right;}
+.dg-name{font-family:"Amiri",serif; font-size:17px; color:var(--gold-soft); line-height:1.2;}
+.dg-name small{font-family:"Cairo"; font-size:11px; color:var(--muted);}
+.dg-meta{font-size:11.5px; color:var(--muted);}
+.dg-reward{font-size:11.5px; color:var(--ink);}
+.dg-power{
+  flex:0 0 auto; font-size:13px; font-weight:800; color:#7cf0a8; white-space:nowrap;
+  background:rgba(124,240,168,.1); border-radius:9px; padding:4px 8px;
+}
+.dg-power.warn{color:#ff8a7a; background:rgba(255,106,106,.1);}
+.dg-lock{flex:0 0 auto; font-size:18px; opacity:.7;}
+
+/* ---------- party tab: hero cards ---------- */
+.hero-card{
+  display:flex; gap:12px; align-items:stretch;
+  padding:12px; margin-bottom:12px; border-radius:16px;
+  border:1px solid var(--line); background:linear-gradient(180deg,var(--bg-2),var(--bg-1));
+}
+.hc-info{display:flex; flex-direction:column; gap:5px; flex:1; min-width:0;}
+.hc-name{font-family:"Amiri",serif; font-size:20px; line-height:1.15;}
+.hc-sub{font-size:12px; color:var(--muted);}
+.hc-sub i{font-style:normal; font-weight:700;}
+.hc-stats{font-size:12.5px; color:var(--ink); line-height:1.5;}
+.hc-actions{display:flex; flex-direction:column; gap:6px; margin-top:4px;}
+.mini-btn{
+  width:100%; text-align:center; padding:8px 10px; border-radius:11px; cursor:pointer;
+  font-family:"Cairo"; font-size:12px; font-weight:700;
+  border:1px solid var(--gold); color:var(--gold-soft); background:rgba(232,185,74,.1);
+  transition:filter .15s ease, transform .1s ease;
+}
+.mini-btn.alt{border-color:var(--line); color:var(--ink); background:rgba(255,255,255,.04);}
+.mini-btn:not(:disabled):active{transform:scale(.98);}
+.mini-btn:disabled{opacity:.4; cursor:not-allowed;}
+
+/* ---------- set cards + grid (swap overlay + craft pool) ---------- */
+.swap-card{
+  width:100%; max-width:340px; max-height:80vh; overflow-y:auto; padding:18px;
+  border-radius:18px; border:2px solid var(--gold);
+  background:linear-gradient(180deg,var(--bg-2),var(--bg-1));
+}
+.swap-title{font-family:"Amiri",serif; font-size:21px; color:var(--gold-soft); text-align:center; margin-bottom:14px;}
+.set-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:9px; margin-bottom:14px;}
+.set-card{
+  display:flex; flex-direction:column; align-items:center; gap:5px;
+  padding:10px 6px; border-radius:13px; cursor:pointer;
+  border:2px solid var(--line); background:rgba(10,7,18,.4);
+  transition:transform .12s ease, box-shadow .15s ease;
+}
+.set-card.display{cursor:default;}
+.set-card:not(.display):active{transform:scale(.96);}
+.set-card:not(.display):hover{box-shadow:0 0 14px rgba(232,185,74,.18);}
+.set-mini{width:38px; height:38px; border-radius:50%; box-shadow:0 2px 8px rgba(0,0,0,.5);}
+.set-name{font-family:"Amiri",serif; font-size:13.5px; text-align:center; line-height:1.15;}
+.set-meta{font-size:11px;}
+
+/* ---------- craft: tier picker ---------- */
+.tier-pick{display:grid; grid-template-columns:repeat(2,1fr); gap:8px; margin:6px 0 14px;}
+.tier-btn{
+  display:flex; align-items:center; justify-content:center; gap:7px;
+  padding:11px; border-radius:13px; cursor:pointer;
+  font-family:"Cairo"; font-size:14px; font-weight:700; color:var(--ink);
+  border:1px solid var(--line); background:linear-gradient(180deg,var(--bg-2),var(--bg-1));
+  transition:border-color .15s ease, box-shadow .15s ease, transform .1s ease;
+}
+.tier-btn:active{transform:scale(.98);}
+.tier-btn.on{border-color:var(--gold); color:var(--gold-soft); box-shadow:0 0 14px rgba(232,185,74,.18);}
+.tier-dot{width:12px; height:12px; border-radius:50%; box-shadow:0 0 8px currentColor;}
+
+/* compact empty-state inside overlays + muted lose text */
+.placeholder.small{padding:16px 8px; min-height:0;}
+.placeholder.small p{font-size:13px; color:var(--muted);}
+.res-reward.muted{color:var(--muted); font-weight:600; font-size:13.5px;}
+
+/* prev-cost insufficient-funds state (reused from forge) */
+.prev-cost b.poor{color:#ff6a6a;}
+
+/* reduced-motion: neutralize the interactions added above */
+@media (prefers-reduced-motion: reduce){
+  .dungeon-card,.mini-btn,.set-card,.tier-btn,.knight.mini.down{transition:none;}
+  .dungeon-card:not(.locked):active,.mini-btn:not(:disabled):active,
+  .set-card:not(.display):active,.tier-btn:active{transform:none;}
+}
+
+/* =========================================================================
+   PART 7 — LANDSCAPE layout + relay combat + element picker
+   Overrides the portrait shell; reuses all tokens + .knight/.monster art.
+   ========================================================================= */
+
+/* center the landscape frame vertically too */
+body{align-items:center;}
+
+/* phone becomes a WIDE landscape frame: [rail | stage] */
+.phone{
+  max-width:1000px; max-height:540px;
+  flex-direction:row;
+}
+
+/* ---- left vertical nav rail (sits on the right in RTL) ---- */
+.railnav{
+  flex:0 0 68px; width:68px; height:100%;
+  display:flex; flex-direction:column; align-items:center; gap:6px;
+  padding:8px 5px; overflow-y:auto; z-index:3;
+  border-left:1px solid var(--line);
+  background:linear-gradient(180deg, rgba(34,22,52,.6), rgba(10,7,18,.5));
+}
+.rail-power{
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  width:54px; height:54px; border-radius:14px; margin-bottom:4px;
+  border:1.5px solid var(--gold); box-shadow:0 0 14px rgba(232,185,74,.25);
+  background:radial-gradient(circle at 50% 30%, rgba(232,185,74,.18), transparent 70%);
+}
+.rp-num{font-weight:800; font-size:16px; line-height:1; color:var(--gold-soft);}
+.rp-cap{font-size:8px; color:var(--muted); margin-top:2px;}
+.rail-tab{
+  width:100%; display:flex; flex-direction:column; align-items:center; gap:3px;
+  padding:8px 2px; border-radius:12px; cursor:pointer;
+  border:1px solid transparent; background:none; color:var(--muted);
+  font-family:"Cairo"; transition:color .15s ease, background .15s ease, transform .1s ease;
+}
+.rail-tab:active{transform:scale(.95);}
+.rail-tab.active{color:var(--gold-soft); background:rgba(232,185,74,.10); border-color:var(--line);}
+.rt-ic{font-size:21px; line-height:1;}
+.rail-tab.active .rt-ic{filter:drop-shadow(0 0 8px rgba(232,185,74,.5));}
+.rt-lb{font-size:9.5px; font-weight:700;}
+.rail-sound{margin-top:auto;}
+
+/* ---- stage = hud + content ---- */
+.stage{flex:1; min-width:0; height:100%; display:flex; flex-direction:column; overflow:hidden;}
+.hud{
+  flex:0 0 auto; display:flex; align-items:center; gap:10px;
+  padding:6px 14px; border-bottom:1px solid var(--line);
+  background:rgba(10,7,18,.3); z-index:2;
+}
+.hud .brand{font-size:15px; white-space:nowrap;}
+.hud-mats{display:flex; gap:6px;}
+.hud .currencies{margin-inline-start:auto; display:flex; gap:8px;}
+.content{flex:1; min-height:0; overflow-y:auto; -webkit-overflow-scrolling:touch;}
+.panel{min-height:0; padding:10px 16px 16px;}
+
+/* =========================================================
+   RELAY COMBAT (landscape)
+   ========================================================= */
+.combat{position:relative;}
+.combat .arena{
+  height:42vh; min-height:190px; max-height:280px; margin:4px 0;
+}
+.arena .monster{transform:scale(.85); transform-origin:bottom center;}
+
+/* the active "lead" hero — large, centre-left, faces the boss */
+.lead{position:relative; width:150px; height:240px; flex:0 0 auto;}
+.lead .knight{
+  position:absolute; bottom:0; left:50%; margin-left:-75px;
+  transform:scale(.78); transform-origin:bottom center;
+}
+
+/* relay roster strip (turn order + hp) */
+.roster{display:flex; gap:8px; margin:2px 2px 6px;}
+.rtoken{
+  flex:1; min-width:0; display:flex; align-items:center; gap:7px;
+  padding:5px 8px; border-radius:11px;
+  border:1px solid var(--line); background:rgba(34,22,52,.5);
+  transition:border-color .15s ease, box-shadow .15s ease, opacity .25s ease, filter .25s ease;
+}
+.rtoken.active{border-color:var(--gold); background:rgba(232,185,74,.09); box-shadow:0 0 12px rgba(232,185,74,.22);}
+.rtoken.down{opacity:.42; filter:grayscale(.7);}
+.rt-dot{width:22px; height:22px; border-radius:50%; flex:0 0 auto;
+  box-shadow:0 1px 6px rgba(0,0,0,.5); border:1px solid rgba(255,255,255,.18);}
+.rt-body{flex:1; min-width:0; display:flex; flex-direction:column; gap:3px;}
+.rt-name{font-size:11px; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.rt-name small{color:var(--gold-soft); font-weight:800;}
+
+/* attack bar: turn + last log + big attack button (inline) */
+.combat-bar{display:flex; align-items:center; gap:12px; margin-top:2px;}
+.cb-info{flex:1; min-width:0; display:flex; flex-direction:column; gap:3px;}
+.combat-bar .turn-ind{display:inline-block; margin:0; width:fit-content;}
+.cb-log{font-size:11px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.btn-primary.atk{width:auto; min-width:150px; margin:0; flex:0 0 auto;}
+
+/* =========================================================
+   NON-COMBAT TABS (use the wide space)
+   ========================================================= */
+.sub-note{font-family:"Cairo"; font-size:11px; color:var(--muted); font-weight:600;}
+
+/* dungeons -> 2 columns */
+.dungeon-list{display:grid; grid-template-columns:repeat(2,1fr); gap:10px;}
+
+/* party -> 3 columns */
+.hero-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:12px;}
+.hero-card{margin-bottom:0;}
+.hc-top{position:relative; display:flex; flex-direction:column; align-items:center; flex:0 0 auto;}
+.hc-order{font-size:11px; font-weight:800; color:var(--muted); margin-top:2px;}
+
+/* craft -> 2 columns (controls | stash) */
+.craft-cols{display:grid; grid-template-columns:1fr 1fr; gap:16px; align-items:start;}
+.lbl{font-size:12px; color:var(--muted); font-weight:700; margin:8px 2px 6px;}
+.craft-left .tier-pick{margin:0 0 6px;}
+.el-pick{display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px;}
+.el-btn{
+  display:flex; align-items:center; gap:5px; padding:7px 10px; border-radius:10px; cursor:pointer;
+  border:1px solid var(--line); background:rgba(34,22,52,.5); color:var(--ink);
+  font-family:"Cairo"; font-size:12.5px; font-weight:700; transition:border-color .15s ease, transform .1s ease;
+}
+.el-btn:active{transform:scale(.97);}
+.el-btn.on{background:rgba(232,185,74,.06);}
+.el-dot{width:10px; height:10px; border-radius:50%; box-shadow:0 0 6px currentColor;}
+.craft-right .reset-btn{margin-top:14px;}
+
+/* =========================================================
+   PORTRAIT: ask the player to rotate
+   ========================================================= */
+.rotate-prompt{display:none;}
+@media (orientation: portrait){
+  .phone{display:none;}
+  .rotate-prompt{
+    display:flex; position:fixed; inset:0; z-index:50; text-align:center;
+    align-items:center; justify-content:center; color:var(--gold-soft);
+    background:radial-gradient(120% 60% at 50% 0%, #2a1750, transparent 60%), linear-gradient(180deg,var(--bg-1),var(--bg-0));
+  }
+  .rp-icon{font-size:56px; display:inline-block; animation:rpSpin 2.6s ease-in-out infinite;}
+  .rp-inner p{font-family:"Amiri",serif; font-size:22px; margin-top:16px; padding:0 24px; color:var(--ink);}
+}
+@keyframes rpSpin{0%,100%{transform:rotate(-10deg);} 50%{transform:rotate(80deg);}}
+
+/* reduced-motion neutralizers for PART 7 */
+@media (prefers-reduced-motion: reduce){
+  .rail-tab,.el-btn,.rtoken{transition:none;}
+  .rail-tab:active,.el-btn:active{transform:none;}
+  .rp-icon{animation:none;}
+}
+
+/* =========================================================================
+   PART 8 — MARKET (gem shop, offers, exchange, sell, buy modal)
+   ========================================================================= */
+.market-head{display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:10px;}
+.market-head .inv-title{margin:0;}
+.gem-balance{
+  font-weight:800; font-size:15px; color:#e3d2ff;
+  background:linear-gradient(180deg, rgba(199,125,255,.18), rgba(199,125,255,.06));
+  border:1px solid rgba(199,125,255,.5); border-radius:999px; padding:5px 12px; line-height:1;
+}
+.mk-subtabs{margin-inline-start:auto; display:flex; gap:6px; background:rgba(10,7,18,.4); border:1px solid var(--line); border-radius:12px; padding:3px;}
+.mk-subtab{
+  padding:7px 16px; border-radius:9px; cursor:pointer; border:none; background:none;
+  color:var(--muted); font-family:"Cairo"; font-size:13px; font-weight:700; transition:color .15s, background .15s;
+}
+.mk-subtab.on{color:#0a0712; background:linear-gradient(180deg, var(--gold-soft), var(--gold)); }
+
+.mk-bar{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:12px;}
+.mk-note{font-size:11.5px; color:var(--muted);}
+.mk-bar .mini-btn{width:auto; flex:0 0 auto; margin-inline-start:auto;}
+
+/* featured banner */
+.featured{
+  display:flex; align-items:center; gap:14px; position:relative;
+  padding:14px; margin-bottom:14px; border-radius:16px; border:2px solid var(--gold);
+  background:
+    radial-gradient(80% 120% at 100% 0%, rgba(199,125,255,.12), transparent 60%),
+    linear-gradient(180deg, var(--bg-2), var(--bg-1));
+  overflow:hidden;
+}
+.featured.sold{opacity:.5; filter:grayscale(.6);}
+.ft-badge{position:absolute; top:0; inset-inline-start:0; font-size:10px; font-weight:800; color:#0a0712;
+  background:linear-gradient(90deg, var(--gold-soft), var(--gold)); padding:3px 10px; border-bottom-right-radius:10px;}
+.ft-art{width:74px; height:74px; flex:0 0 auto; border-radius:50%; box-shadow:0 3px 14px rgba(0,0,0,.55); border:1px solid rgba(255,255,255,.18);}
+.ft-info{flex:1; min-width:0; display:flex; flex-direction:column; gap:4px;}
+.ft-name{font-family:"Amiri",serif; font-size:19px; line-height:1.15;}
+.ft-sub{font-size:12px; color:var(--muted);} .ft-sub i{font-style:normal; font-weight:700;}
+.ft-stats{font-size:12.5px; color:var(--ink);}
+
+/* buy buttons */
+.buy-btn{
+  flex:0 0 auto; padding:11px 18px; border-radius:12px; cursor:pointer; white-space:nowrap;
+  font-family:"Cairo"; font-size:14px; font-weight:800; color:#0a0712;
+  border:none; background:linear-gradient(180deg, #d9b9ff, #b07dff); box-shadow:0 3px 0 #6a3fae;
+  transition:filter .15s, transform .1s;
+}
+.buy-btn:not(:disabled):active{transform:translateY(2px); box-shadow:0 1px 0 #6a3fae;}
+.buy-btn:disabled{filter:grayscale(.7) brightness(.7); cursor:not-allowed; box-shadow:none;}
+.buy-btn.sm{width:100%; padding:8px; font-size:12.5px; box-shadow:0 2px 0 #6a3fae;}
+
+/* daily offers grid */
+.offer-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:10px;}
+.offer-card{
+  display:flex; flex-direction:column; align-items:center; gap:5px;
+  padding:11px 8px; border-radius:14px; border:2px solid var(--line); background:rgba(34,22,52,.5);
+}
+.offer-card.sold{opacity:.5; filter:grayscale(.6);}
+.of-stats{font-size:10.5px; color:var(--muted); margin-bottom:3px;}
+.offer-card .set-mini{width:46px; height:46px; border-radius:50%; box-shadow:0 2px 8px rgba(0,0,0,.5);}
+
+/* exchange counter */
+.ex-list{display:flex; flex-direction:column; gap:9px; margin-bottom:6px;}
+.ex-row{
+  display:flex; align-items:center; gap:12px; padding:11px 13px; border-radius:13px;
+  border:1px solid var(--line); background:rgba(34,22,52,.5);
+}
+.ex-give{font-size:14px; font-weight:700; color:var(--ink); min-width:84px;}
+.ex-arrow{color:var(--muted); font-weight:800;}
+.ex-get{font-size:14px; font-weight:800; color:#d9b9ff;}
+.ex-row .mini-btn{width:auto; flex:0 0 auto; margin-inline-start:auto;}
+
+/* sell sets */
+.sell-list{display:flex; flex-direction:column; gap:9px;}
+.sell-row{display:flex; align-items:center; gap:11px; padding:9px 12px; border-radius:13px;
+  border:1px solid var(--line); background:rgba(34,22,52,.5);}
+.set-mini.xs{width:30px; height:30px; border-radius:50%; flex:0 0 auto;}
+.sell-info{flex:1; min-width:0; display:flex; flex-direction:column; gap:2px;}
+.sell-row .mini-btn{width:auto; flex:0 0 auto;}
+
+/* buy confirmation modal */
+.buy-card{
+  width:100%; max-width:330px; padding:18px; border-radius:18px; border:2px solid var(--gold);
+  background:linear-gradient(180deg, var(--bg-2), var(--bg-1)); text-align:center;
+}
+.buy-preview{display:flex; flex-direction:column; align-items:center; gap:6px; margin-bottom:14px;}
+.set-mini.lg{width:74px; height:74px; border-radius:50%; box-shadow:0 3px 14px rgba(0,0,0,.55); border:1px solid rgba(255,255,255,.18);}
+.buy-preview .set-name{font-family:"Amiri",serif; font-size:18px;}
+.buy-stats{font-size:13px; color:var(--ink); margin-top:2px;}
+.buy-cost{font-size:14px; color:var(--muted); margin-bottom:14px;} .buy-cost b{color:#d9b9ff; font-size:16px;}
+.buy-actions{display:flex; gap:10px;}
+.buy-actions .btn-primary,.buy-actions .btn-secondary{margin-top:0; flex:1;}
+
+/* =========================================================================
+   PART 9 — DISPLAY FIXES (landscape)
+   - brand title was absolutely-centered for the OLD portrait topbar; it now
+     floated over the whole screen. Make it a normal in-flow HUD item.
+   - HUD currencies were stacked vertically; lay them inline.
+   - lists used fixed column counts that cramp/overflow on narrow landscape;
+     make them responsive (auto-fit).
+   - overlays/modals cover the viewport so they are never scrolled off.
+   - only nudge to rotate on small touch screens, not large/desktop windows.
+   ========================================================================= */
+
+/* fixed: brand no longer floats over the content */
+.hud{position:relative;}
+.hud .brand{
+  position:static; transform:none; pointer-events:auto;
+  font-size:15px; line-height:1; flex:0 0 auto;
+  text-shadow:0 0 10px rgba(232,185,74,.35);
+}
+
+/* HUD currencies inline (base CSS stacked them in a column) */
+.hud .currencies{flex-direction:row; align-items:center; gap:8px;}
+.hud .coin{min-width:0;}
+
+/* responsive lists — fill the wide space, drop columns gracefully when narrow */
+.dungeon-list{grid-template-columns:repeat(auto-fit, minmax(258px, 1fr));}
+.hero-grid{grid-template-columns:repeat(auto-fit, minmax(232px, 1fr));}
+.craft-cols{grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));}
+
+/* keep the combat scene tidy and centred on wide screens */
+.combat{max-width:720px; margin-inline:auto;}
+
+/* modals/overlays cover the viewport (never clipped or scrolled off) */
+.result-overlay{position:fixed;}
+
+/* show the game (not the rotate prompt) on large/desktop windows even in portrait */
+@media (orientation: portrait) and (min-width: 901px){
+  .phone{display:flex;}
+  .rotate-prompt{display:none;}
+}
