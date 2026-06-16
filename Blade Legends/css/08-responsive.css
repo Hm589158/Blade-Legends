@@ -1,0 +1,53 @@
+/* =========================================================================
+   PART 9 — DISPLAY FIXES (landscape)
+   - brand title was absolutely-centered for the OLD portrait topbar; it now
+     floated over the whole screen. Make it a normal in-flow HUD item.
+   - HUD currencies were stacked vertically; lay them inline.
+   - lists used fixed column counts that cramp/overflow on narrow landscape;
+     make them responsive (auto-fit).
+   - overlays/modals cover the viewport so they are never scrolled off.
+   - only nudge to rotate on small touch screens, not large/desktop windows.
+   ========================================================================= */
+
+/* fixed: brand no longer floats over the content */
+.hud{position:relative;}
+.hud .brand{
+  position:static; transform:none; pointer-events:auto;
+  font-size:15px; line-height:1; flex:0 0 auto;
+  text-shadow:0 0 10px rgba(232,185,74,.35);
+}
+
+/* HUD currencies inline (base CSS stacked them in a column) */
+.hud .currencies{flex-direction:row; align-items:center; gap:8px;}
+.hud .coin{min-width:0;}
+
+/* responsive lists — fill the wide space, drop columns gracefully when narrow */
+.dungeon-list{grid-template-columns:repeat(auto-fit, minmax(258px, 1fr));}
+.hero-grid{grid-template-columns:repeat(auto-fit, minmax(232px, 1fr));}
+.craft-cols{grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));}
+
+/* keep the combat scene tidy and centred on wide screens */
+.combat{max-width:720px; margin-inline:auto;}
+
+/* modals/overlays cover the viewport (never clipped or scrolled off) */
+.result-overlay{position:fixed;}
+
+/* show the game (not the rotate prompt) on large/desktop windows even in portrait */
+@media (orientation: portrait) and (min-width: 901px){
+  .phone{display:flex;}
+  .rotate-prompt{display:none;}
+}
+
+/* =========================================================================
+   PART 10 — FULL-SCREEN (fill the whole device, no black borders)
+   Removes the centred fixed-size frame so the app fills the WebView.
+   ========================================================================= */
+html, body{ height:100dvh; }
+body{ align-items:stretch; justify-content:stretch; }
+#app{ width:100%; height:100dvh; }
+.phone{
+  width:100%; height:100%;
+  max-width:none; max-height:none;
+  border-radius:0;
+}
+

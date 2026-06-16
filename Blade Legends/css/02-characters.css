@@ -1,0 +1,154 @@
+    /* ---------- ARENA (the hero) ---------- */
+    .arena{
+      direction:ltr; /* keep monster left / knight right regardless of RTL page */
+      position:relative;
+      display:flex; align-items:flex-end; justify-content:space-around;
+      height:300px; margin:6px 0 4px;
+      border-radius:18px;
+      background:
+        radial-gradient(80% 50% at 50% 100%, rgba(124,77,255,.18), transparent 70%),
+        linear-gradient(180deg, rgba(10,7,18,.0) 30%, rgba(10,7,18,.55) 100%);
+      overflow:hidden;
+    }
+    /* distant horizon glow + ground line */
+    .arena::before{
+      content:""; position:absolute; left:0; right:0; bottom:0; height:46%;
+      background:linear-gradient(180deg, transparent, rgba(124,77,255,.10) 60%, rgba(232,185,74,.06));
+      border-top:1px solid rgba(232,185,74,.10);
+    }
+
+    /* =========================================================
+       KNIGHT  — pure CSS, layered absolute divs
+       Colors driven by CSS custom props from equipped gear.
+       ========================================================= */
+    .knight{position:relative; width:150px; height:210px; transform-origin:bottom center;}
+
+    .knight .aura{
+      position:absolute; left:50%; top:34px; width:170px; height:170px;
+      transform:translateX(-50%); border-radius:50%; z-index:0;
+      background:radial-gradient(circle, var(--aura-col) 0%, transparent 62%);
+      box-shadow:0 0 42px var(--aura-col); opacity:.7;
+    }
+    .knight .legs{
+      position:absolute; left:50%; bottom:0; width:66px; height:72px;
+      transform:translateX(-50%); z-index:1; border-radius:4px;
+      background:linear-gradient(#2c2845, #14121f);
+      clip-path:polygon(0 0,100% 0,86% 100%,60% 88%,50% 100%,40% 88%,14% 100%);
+    }
+    .knight .shield{
+      position:absolute; left:-10px; top:66px; width:48px; height:64px; z-index:2;
+      background:linear-gradient(150deg, rgba(255,255,255,.18), transparent 42%),
+                 linear-gradient(var(--chest-sec), #100e1a);
+      clip-path:polygon(50% 0,100% 18%,100% 60%,50% 100%,0 60%,0 18%);
+      box-shadow:inset 0 0 0 2px var(--chest-acc), 0 4px 10px rgba(0,0,0,.55);
+    }
+    .knight .body{
+      position:absolute; left:50%; top:58px; width:110px; height:98px;
+      transform:translateX(-50%); z-index:3;
+      background:linear-gradient(160deg, rgba(255,255,255,.28), transparent 38%),
+                 linear-gradient(var(--chest), var(--chest-sec));
+      clip-path:polygon(50% 0,78% 8%,100% 30%,92% 100%,50% 92%,8% 100%,0 30%,22% 8%);
+      box-shadow:0 0 var(--glow-c) var(--chest-acc),
+                 inset 0 6px 10px rgba(255,255,255,.18),
+                 inset 0 -8px 12px rgba(0,0,0,.42);
+    }
+    .knight .pauldron{
+      position:absolute; top:-6px; width:38px; height:30px; z-index:4;
+      border-radius:50% 50% 40% 40%;
+      background:linear-gradient(var(--chest-acc), var(--chest));
+      box-shadow:0 0 var(--glow-c) var(--chest-acc);
+    }
+    .knight .pauldron.left{left:-13px;}
+    .knight .pauldron.right{right:-13px;}
+    .knight .emblem{
+      position:absolute; left:50%; top:34px; width:20px; height:20px; z-index:5;
+      transform:translateX(-50%) rotate(45deg);
+      background:var(--el-col); box-shadow:0 0 10px var(--el-col);
+      border:1px solid rgba(255,255,255,.4);
+    }
+    .knight .weapon{position:absolute; right:-8px; top:38px; width:32px; height:152px; z-index:4;}
+    .knight .blade{
+      position:absolute; left:9px; top:0; width:12px; height:106px;
+      background:linear-gradient(90deg, rgba(255,255,255,.7), var(--weapon-acc) 42%, var(--weapon));
+      clip-path:polygon(50% 0,100% 12%,100% 100%,0 100%,0 12%);
+      box-shadow:0 0 var(--glow-w) var(--weapon-acc);
+    }
+    .knight .guard{
+      position:absolute; left:-2px; top:102px; width:34px; height:10px; border-radius:3px;
+      background:linear-gradient(var(--weapon-acc), var(--weapon));
+    }
+    .knight .hilt{
+      position:absolute; left:10px; top:110px; width:10px; height:34px; border-radius:4px;
+      background:linear-gradient(#5a4a2a, #2a2114);
+    }
+    .knight .helmet{
+      position:absolute; left:50%; top:6px; width:64px; height:66px; z-index:6;
+      transform:translateX(-50%);
+      background:linear-gradient(160deg, rgba(255,255,255,.3), transparent 45%),
+                 linear-gradient(var(--helmet), var(--helmet-acc));
+      clip-path:polygon(20% 0,80% 0,100% 35%,92% 78%,70% 100%,30% 100%,8% 78%,0 35%);
+      box-shadow:0 0 var(--glow-h) var(--helmet-acc),
+                 inset 0 4px 6px rgba(255,255,255,.25),
+                 inset 0 -6px 8px rgba(0,0,0,.4);
+    }
+    .knight .crest{
+      position:absolute; left:50%; top:-16px; width:14px; height:26px;
+      transform:translateX(-50%);
+      background:linear-gradient(var(--el-col), transparent);
+      clip-path:polygon(50% 0,100% 30%,80% 100%,50% 80%,20% 100%,0 30%);
+    }
+    .knight .visor{
+      position:absolute; left:50%; top:36px; width:42px; height:9px;
+      transform:translateX(-50%); background:#08070f; border-radius:3px;
+    }
+    .knight .visor::after{
+      content:""; position:absolute; inset:2px 5px;
+      background:var(--el-col); border-radius:2px; filter:blur(.6px); opacity:.95;
+    }
+
+    /* =========================================================
+       MONSTER — pure CSS
+       ========================================================= */
+    .monster{position:relative; width:168px; height:198px; transform-origin:bottom center;}
+    .monster .m-aura{
+      position:absolute; left:50%; top:28px; width:188px; height:188px;
+      transform:translateX(-50%); border-radius:50%; z-index:0;
+      background:radial-gradient(circle, var(--m-el) 0%, transparent 60%);
+      box-shadow:0 0 50px var(--m-el); opacity:.65;
+    }
+    .monster .m-wing{position:absolute; top:48px; width:72px; height:104px; z-index:1; opacity:.85;}
+    .monster .m-wing.left{left:-32px; background:linear-gradient(var(--m-sec), transparent);
+      clip-path:polygon(100% 0,100% 100%,0 58%,42% 30%);}
+    .monster .m-wing.right{right:-32px; background:linear-gradient(var(--m-sec), transparent);
+      clip-path:polygon(0 0,0 100%,100% 58%,58% 30%);}
+    .monster .m-body{
+      position:absolute; left:50%; top:60px; width:132px; height:130px;
+      transform:translateX(-50%); z-index:2;
+      background:linear-gradient(160deg, rgba(255,255,255,.16), transparent 38%),
+                 linear-gradient(var(--m-primary), var(--m-sec));
+      clip-path:polygon(50% 0,88% 18%,100% 70%,74% 100%,26% 100%,0 70%,12% 18%);
+      box-shadow:0 0 30px var(--m-acc), inset 0 -10px 16px rgba(0,0,0,.5);
+    }
+    .monster .m-head{
+      position:absolute; left:50%; top:18px; width:86px; height:72px;
+      transform:translateX(-50%); z-index:3;
+      background:linear-gradient(var(--m-primary), var(--m-sec));
+      clip-path:polygon(50% 0,82% 20%,100% 64%,72% 100%,28% 100%,0 64%,18% 20%);
+      box-shadow:0 0 22px var(--m-acc);
+    }
+    .monster .m-horn{position:absolute; top:-10px; width:16px; height:34px;
+      background:linear-gradient(var(--m-acc), var(--m-sec)); clip-path:polygon(50% 0,100% 100%,0 100%);}
+    .monster .m-horn.left{left:8px; transform:rotate(-18deg);}
+    .monster .m-horn.right{right:8px; transform:rotate(18deg);}
+    .monster .m-eye{position:absolute; top:36px; width:12px; height:15px; border-radius:50%;
+      background:var(--m-el); box-shadow:0 0 12px var(--m-el);}
+    .monster .m-eye.left{left:22px;}
+    .monster .m-eye.right{right:22px;}
+
+    /* VS marker */
+    .vs{
+      align-self:center; font-family:"Amiri",serif; font-weight:700;
+      font-size:22px; color:var(--gold); letter-spacing:1px;
+      text-shadow:0 0 14px rgba(232,185,74,.5); z-index:5; opacity:.9;
+    }
+

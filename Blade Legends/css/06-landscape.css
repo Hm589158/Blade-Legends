@@ -1,0 +1,147 @@
+/* =========================================================================
+   PART 7 — LANDSCAPE layout + relay combat + element picker
+   Overrides the portrait shell; reuses all tokens + .knight/.monster art.
+   ========================================================================= */
+
+/* center the landscape frame vertically too */
+body{align-items:center;}
+
+/* phone becomes a WIDE landscape frame: [rail | stage] */
+.phone{
+  max-width:1000px; max-height:540px;
+  flex-direction:row;
+}
+
+/* ---- left vertical nav rail (sits on the right in RTL) ---- */
+.railnav{
+  flex:0 0 68px; width:68px; height:100%;
+  display:flex; flex-direction:column; align-items:center; gap:6px;
+  padding:8px 5px; overflow-y:auto; z-index:3;
+  border-left:1px solid var(--line);
+  background:linear-gradient(180deg, rgba(34,22,52,.6), rgba(10,7,18,.5));
+}
+.rail-power{
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  width:54px; height:54px; border-radius:14px; margin-bottom:4px;
+  border:1.5px solid var(--gold); box-shadow:0 0 14px rgba(232,185,74,.25);
+  background:radial-gradient(circle at 50% 30%, rgba(232,185,74,.18), transparent 70%);
+}
+.rp-num{font-weight:800; font-size:16px; line-height:1; color:var(--gold-soft);}
+.rp-cap{font-size:8px; color:var(--muted); margin-top:2px;}
+.rail-tab{
+  width:100%; display:flex; flex-direction:column; align-items:center; gap:3px;
+  padding:8px 2px; border-radius:12px; cursor:pointer;
+  border:1px solid transparent; background:none; color:var(--muted);
+  font-family:"Cairo","Amiri"; transition:color .15s ease, background .15s ease, transform .1s ease;
+}
+.rail-tab:active{transform:scale(.95);}
+.rail-tab.active{color:var(--gold-soft); background:rgba(232,185,74,.10); border-color:var(--line);}
+.rt-ic{font-size:21px; line-height:1;}
+.rail-tab.active .rt-ic{filter:drop-shadow(0 0 8px rgba(232,185,74,.5));}
+.rt-lb{font-size:9.5px; font-weight:700;}
+.rail-sound{margin-top:auto;}
+
+/* ---- stage = hud + content ---- */
+.stage{flex:1; min-width:0; height:100%; display:flex; flex-direction:column; overflow:hidden;}
+.hud{
+  flex:0 0 auto; display:flex; align-items:center; gap:10px;
+  padding:6px 14px; border-bottom:1px solid var(--line);
+  background:rgba(10,7,18,.3); z-index:2;
+}
+.hud .brand{font-size:15px; white-space:nowrap;}
+.hud-mats{display:flex; gap:6px;}
+.hud .currencies{margin-inline-start:auto; display:flex; gap:8px;}
+.content{flex:1; min-height:0; overflow-y:auto; -webkit-overflow-scrolling:touch;}
+.panel{min-height:0; padding:10px 16px 16px;}
+
+/* =========================================================
+   RELAY COMBAT (landscape)
+   ========================================================= */
+.combat{position:relative;}
+.combat .arena{
+  height:42vh; min-height:190px; max-height:280px; margin:4px 0;
+}
+.arena .monster{transform:scale(.85); transform-origin:bottom center;}
+
+/* the active "lead" hero — large, centre-left, faces the boss */
+.lead{position:relative; width:150px; height:240px; flex:0 0 auto;}
+.lead .knight{
+  position:absolute; bottom:0; left:50%; margin-left:-75px;
+  transform:scale(.78); transform-origin:bottom center;
+}
+
+/* relay roster strip (turn order + hp) */
+.roster{display:flex; gap:8px; margin:2px 2px 6px;}
+.rtoken{
+  flex:1; min-width:0; display:flex; align-items:center; gap:7px;
+  padding:5px 8px; border-radius:11px;
+  border:1px solid var(--line); background:rgba(34,22,52,.5);
+  transition:border-color .15s ease, box-shadow .15s ease, opacity .25s ease, filter .25s ease;
+}
+.rtoken.active{border-color:var(--gold); background:rgba(232,185,74,.09); box-shadow:0 0 12px rgba(232,185,74,.22);}
+.rtoken.down{opacity:.42; filter:grayscale(.7);}
+.rt-dot{width:22px; height:22px; border-radius:50%; flex:0 0 auto;
+  box-shadow:0 1px 6px rgba(0,0,0,.5); border:1px solid rgba(255,255,255,.18);}
+.rt-body{flex:1; min-width:0; display:flex; flex-direction:column; gap:3px;}
+.rt-name{font-size:11px; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.rt-name small{color:var(--gold-soft); font-weight:800;}
+
+/* attack bar: turn + last log + big attack button (inline) */
+.combat-bar{display:flex; align-items:center; gap:12px; margin-top:2px;}
+.cb-info{flex:1; min-width:0; display:flex; flex-direction:column; gap:3px;}
+.combat-bar .turn-ind{display:inline-block; margin:0; width:fit-content;}
+.cb-log{font-size:11px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.btn-primary.atk{width:auto; min-width:150px; margin:0; flex:0 0 auto;}
+
+/* =========================================================
+   NON-COMBAT TABS (use the wide space)
+   ========================================================= */
+.sub-note{font-family:"Cairo","Amiri"; font-size:11px; color:var(--muted); font-weight:600;}
+
+/* dungeons -> 2 columns */
+.dungeon-list{display:grid; grid-template-columns:repeat(2,1fr); gap:10px;}
+
+/* party -> 3 columns */
+.hero-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:12px;}
+.hero-card{margin-bottom:0;}
+.hc-top{position:relative; display:flex; flex-direction:column; align-items:center; flex:0 0 auto;}
+.hc-order{font-size:11px; font-weight:800; color:var(--muted); margin-top:2px;}
+
+/* craft -> 2 columns (controls | stash) */
+.craft-cols{display:grid; grid-template-columns:1fr 1fr; gap:16px; align-items:start;}
+.lbl{font-size:12px; color:var(--muted); font-weight:700; margin:8px 2px 6px;}
+.craft-left .tier-pick{margin:0 0 6px;}
+.el-pick{display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px;}
+.el-btn{
+  display:flex; align-items:center; gap:5px; padding:7px 10px; border-radius:10px; cursor:pointer;
+  border:1px solid var(--line); background:rgba(34,22,52,.5); color:var(--ink);
+  font-family:"Cairo","Amiri"; font-size:12.5px; font-weight:700; transition:border-color .15s ease, transform .1s ease;
+}
+.el-btn:active{transform:scale(.97);}
+.el-btn.on{background:rgba(232,185,74,.06);}
+.el-dot{width:10px; height:10px; border-radius:50%; box-shadow:0 0 6px currentColor;}
+.craft-right .reset-btn{margin-top:14px;}
+
+/* =========================================================
+   PORTRAIT: ask the player to rotate
+   ========================================================= */
+.rotate-prompt{display:none;}
+@media (orientation: portrait){
+  .phone{display:none;}
+  .rotate-prompt{
+    display:flex; position:fixed; inset:0; z-index:50; text-align:center;
+    align-items:center; justify-content:center; color:var(--gold-soft);
+    background:radial-gradient(120% 60% at 50% 0%, #2a1750, transparent 60%), linear-gradient(180deg,var(--bg-1),var(--bg-0));
+  }
+  .rp-icon{font-size:56px; display:inline-block; animation:rpSpin 2.6s ease-in-out infinite;}
+  .rp-inner p{font-family:"Amiri",serif; font-size:22px; margin-top:16px; padding:0 24px; color:var(--ink);}
+}
+@keyframes rpSpin{0%,100%{transform:rotate(-10deg);} 50%{transform:rotate(80deg);}}
+
+/* reduced-motion neutralizers for PART 7 */
+@media (prefers-reduced-motion: reduce){
+  .rail-tab,.el-btn,.rtoken{transition:none;}
+  .rail-tab:active,.el-btn:active{transform:none;}
+  .rp-icon{animation:none;}
+}
+

@@ -1,0 +1,74 @@
+/* =========================================================================
+   PART 11 — formation (3 knights in a line), loading screen, settings/promo
+   ========================================================================= */
+
+/* ---- relay formation: front fights, reserves queued behind ---- */
+.formation{ position:relative; width:210px; height:100%; flex:0 0 auto; align-self:flex-end; }
+.fighter{
+  position:absolute; bottom:0; left:50%; margin-left:-75px;
+  transition: transform .45s cubic-bezier(.22,.61,.36,1), opacity .45s ease;
+  will-change: transform, opacity;
+}
+/* reserves are dimmed via fighterStyle opacity; .knight filter is reserved for the neon glow system (see 11-neon.css) */
+
+/* ---- loading screen ---- */
+#loader{
+  position:fixed; inset:0; z-index:9999;
+  display:flex; align-items:center; justify-content:center;
+  background:
+    radial-gradient(120% 80% at 50% 12%, #2a1750, transparent 60%),
+    linear-gradient(180deg, var(--bg-1), var(--bg-0));
+  transition:opacity .55s ease;
+}
+#loader.loaded{ opacity:0; pointer-events:none; }
+.ld-inner{ position:relative; display:flex; flex-direction:column; align-items:center; gap:14px; }
+.ld-ring{
+  position:absolute; top:-14px; width:96px; height:96px; border-radius:50%;
+  border:3px solid rgba(232,185,74,.18); border-top-color:var(--gold);
+  animation:ldspin 1s linear infinite;
+}
+.ld-emblem{ font-size:42px; height:96px; display:flex; align-items:center; animation:ldpulse 1.6s ease-in-out infinite; }
+.ld-title{ font-family:"Amiri",serif; font-size:30px; color:var(--gold-soft); text-shadow:0 0 18px rgba(232,185,74,.4); letter-spacing:1px; }
+.ld-bar{ width:190px; height:5px; border-radius:99px; background:rgba(232,185,74,.14); overflow:hidden; }
+.ld-bar-fill{ display:block; width:40%; height:100%; border-radius:99px;
+  background:linear-gradient(90deg, transparent, var(--gold), transparent); animation:ldslide 1.1s ease-in-out infinite; }
+.ld-sub{ font-size:12px; color:var(--muted); letter-spacing:2px; }
+@keyframes ldspin{ to{ transform:rotate(360deg); } }
+@keyframes ldpulse{ 0%,100%{ transform:scale(1); opacity:.9; } 50%{ transform:scale(1.12); opacity:1; } }
+@keyframes ldslide{ 0%{ transform:translateX(-260%); } 100%{ transform:translateX(260%); } }
+
+/* ---- settings modal ---- */
+.settings-card{
+  width:100%; max-width:360px; max-height:86vh; overflow-y:auto; padding:20px;
+  border-radius:18px; border:2px solid var(--gold);
+  background:linear-gradient(180deg, var(--bg-2), var(--bg-1));
+}
+.set-row{
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+  padding:11px 0; border-bottom:1px solid var(--line);
+}
+.set-row > span{ font-size:14px; font-weight:700; color:var(--ink); }
+.set-row .mini-btn{ width:auto; flex:0 0 auto; }
+.set-block{ padding:14px 0; border-bottom:1px solid var(--line); }
+.set-label{ display:block; font-size:13px; font-weight:700; color:var(--gold-soft); margin-bottom:8px; }
+.promo-row{ display:flex; gap:8px; }
+.promo-input{
+  flex:1; min-width:0; padding:10px 12px; border-radius:11px;
+  border:1px solid var(--line); background:rgba(10,7,18,.5); color:var(--ink);
+  font-family:"Cairo","Amiri"; font-size:13px; text-align:center; letter-spacing:1px;
+}
+.promo-input::placeholder{ color:var(--muted); letter-spacing:0; }
+.promo-input:focus{ outline:none; border-color:var(--gold); box-shadow:0 0 10px rgba(232,185,74,.2); }
+.promo-row .mini-btn{ width:auto; flex:0 0 auto; }
+.promo-msg{ margin-top:9px; font-size:12.5px; color:#ff8a7a; font-weight:600; }
+.promo-msg.ok{ color:#7cf0a8; }
+.set-info{ text-align:center; font-size:11px; color:var(--muted); margin:14px 0; }
+.reset-btn.sm{ width:auto; margin:0; padding:8px 14px; font-size:12px; }
+.settings-card .btn-secondary{ margin-top:6px; width:100%; }
+
+/* reduced-motion: stop the loader spinners */
+@media (prefers-reduced-motion: reduce){
+  .ld-ring, .ld-emblem, .ld-bar-fill{ animation:none; }
+  .fighter{ transition:none; }
+}
+

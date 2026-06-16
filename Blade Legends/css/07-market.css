@@ -1,0 +1,114 @@
+/* =========================================================================
+   PART 8 — MARKET (gem shop, offers, exchange, sell, buy modal)
+   ========================================================================= */
+.market-head{display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:10px;}
+.market-head .inv-title{margin:0;}
+.gem-balance{
+  font-weight:800; font-size:15px; color:#e3d2ff;
+  background:linear-gradient(180deg, rgba(199,125,255,.18), rgba(199,125,255,.06));
+  border:1px solid rgba(199,125,255,.5); border-radius:999px; padding:5px 12px; line-height:1;
+}
+.mk-subtabs{margin-inline-start:auto; display:flex; gap:6px; background:rgba(10,7,18,.4); border:1px solid var(--line); border-radius:12px; padding:3px;}
+.mk-subtab{
+  padding:7px 16px; border-radius:9px; cursor:pointer; border:none; background:none;
+  color:var(--muted); font-family:"Cairo","Amiri"; font-size:13px; font-weight:700; transition:color .15s, background .15s;
+}
+.mk-subtab.on{color:#0a0712; background:linear-gradient(180deg, var(--gold-soft), var(--gold)); }
+
+.mk-bar{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:12px;}
+.mk-note{font-size:11.5px; color:var(--muted);}
+.mk-bar .mini-btn{width:auto; flex:0 0 auto; margin-inline-start:auto;}
+
+/* featured banner */
+.featured{
+  display:flex; align-items:center; gap:14px; position:relative;
+  padding:14px; margin-bottom:14px; border-radius:16px; border:2px solid var(--gold);
+  background:
+    radial-gradient(80% 120% at 100% 0%, rgba(199,125,255,.12), transparent 60%),
+    linear-gradient(180deg, var(--bg-2), var(--bg-1));
+  overflow:hidden;
+}
+.featured.sold{opacity:.5; filter:grayscale(.6);}
+.ft-badge{position:absolute; top:0; inset-inline-start:0; font-size:10px; font-weight:800; color:#0a0712;
+  background:linear-gradient(90deg, var(--gold-soft), var(--gold)); padding:3px 10px; border-bottom-right-radius:10px;}
+.ft-art{width:74px; height:74px; flex:0 0 auto; border-radius:50%; box-shadow:0 3px 14px rgba(0,0,0,.55); border:1px solid rgba(255,255,255,.18);}
+.ft-info{flex:1; min-width:0; display:flex; flex-direction:column; gap:4px;}
+.ft-name{font-family:"Amiri",serif; font-size:19px; line-height:1.15;}
+.ft-sub{font-size:12px; color:var(--muted);} .ft-sub i{font-style:normal; font-weight:700;}
+.ft-stats{font-size:12.5px; color:var(--ink);}
+
+/* buy buttons */
+.buy-btn{
+  flex:0 0 auto; padding:11px 18px; border-radius:12px; cursor:pointer; white-space:nowrap;
+  font-family:"Cairo","Amiri"; font-size:14px; font-weight:800; color:#0a0712;
+  border:none; background:linear-gradient(180deg, #d9b9ff, #b07dff); box-shadow:0 3px 0 #6a3fae;
+  transition:filter .15s, transform .1s;
+}
+.buy-btn:not(:disabled):active{transform:translateY(2px); box-shadow:0 1px 0 #6a3fae;}
+.buy-btn:disabled{filter:grayscale(.7) brightness(.7); cursor:not-allowed; box-shadow:none;}
+.buy-btn.sm{width:100%; padding:8px; font-size:12.5px; box-shadow:0 2px 0 #6a3fae;}
+
+/* daily offers grid */
+.offer-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:10px;}
+.offer-card{
+  display:flex; flex-direction:column; align-items:center; gap:5px;
+  padding:11px 8px; border-radius:14px; border:2px solid var(--line); background:rgba(34,22,52,.5);
+}
+.offer-card.sold{opacity:.5; filter:grayscale(.6);}
+.of-stats{font-size:10.5px; color:var(--muted); margin-bottom:3px;}
+.offer-card .set-mini{width:46px; height:46px; border-radius:50%; box-shadow:0 2px 8px rgba(0,0,0,.5);}
+
+/* exchange counter */
+.ex-list{display:flex; flex-direction:column; gap:9px; margin-bottom:6px;}
+.ex-row{
+  display:flex; align-items:center; gap:12px; padding:11px 13px; border-radius:13px;
+  border:1px solid var(--line); background:rgba(34,22,52,.5);
+}
+.ex-give{font-size:14px; font-weight:700; color:var(--ink); min-width:84px;}
+.ex-arrow{color:var(--muted); font-weight:800;}
+.ex-get{font-size:14px; font-weight:800; color:#d9b9ff;}
+.ex-row .mini-btn{width:auto; flex:0 0 auto; margin-inline-start:auto;}
+
+/* sell sets */
+.sell-list{display:flex; flex-direction:column; gap:9px;}
+.sell-row{display:flex; align-items:center; gap:11px; padding:9px 12px; border-radius:13px;
+  border:1px solid var(--line); background:rgba(34,22,52,.5);}
+.set-mini.xs{width:30px; height:30px; border-radius:50%; flex:0 0 auto;}
+.sell-info{flex:1; min-width:0; display:flex; flex-direction:column; gap:2px;}
+.sell-row .mini-btn{width:auto; flex:0 0 auto;}
+
+/* buy confirmation modal */
+.buy-card{
+  width:100%; max-width:330px; padding:18px; border-radius:18px; border:2px solid var(--gold);
+  background:linear-gradient(180deg, var(--bg-2), var(--bg-1)); text-align:center;
+}
+.buy-preview{display:flex; flex-direction:column; align-items:center; gap:6px; margin-bottom:14px;}
+.set-mini.lg{width:74px; height:74px; border-radius:50%; box-shadow:0 3px 14px rgba(0,0,0,.55); border:1px solid rgba(255,255,255,.18);}
+.buy-preview .set-name{font-family:"Amiri",serif; font-size:18px;}
+.buy-stats{font-size:13px; color:var(--ink); margin-top:2px;}
+.buy-cost{font-size:14px; color:var(--muted); margin-bottom:14px;} .buy-cost b{color:#d9b9ff; font-size:16px;}
+.buy-actions{display:flex; gap:10px;}
+.buy-actions .btn-primary,.buy-actions .btn-secondary{margin-top:0; flex:1;}
+
+
+/* =========================================================================
+   Gear preview icon — show the set as a stylized CUIRASS (breastplate)
+   instead of a flat circle. One rule restyles it everywhere it appears
+   (market featured/offers, trade, buy modal, sets list, equip/swap).
+   The inline gradient (the set's own colours) fills the plate.
+   ========================================================================= */
+.set-mini, .ft-art{
+  position:relative; border-radius:0 !important; border:0 !important; overflow:visible;
+  clip-path:polygon(50% 2%,78% 10%,100% 32%,92% 100%,50% 92%,8% 100%,0 32%,22% 10%);
+}
+.set-mini::before, .ft-art::before{           /* gold trim + top sheen + inner depth */
+  content:""; position:absolute; inset:0; clip-path:inherit;
+  background:linear-gradient(160deg, rgba(255,255,255,.34), transparent 44%);
+  box-shadow: inset 0 0 0 2px rgba(245,197,66,.55), inset 0 -7px 11px rgba(0,0,0,.42), inset 0 5px 7px rgba(255,255,255,.16);
+}
+.set-mini::after, .ft-art::after{             /* central soul-gem inlay */
+  content:""; position:absolute; left:50%; top:31%; width:30%; height:40%; transform:translateX(-50%);
+  background:radial-gradient(circle at 45% 32%, rgba(255,255,255,.95), rgba(255,240,205,.35) 55%, transparent 78%);
+  clip-path:polygon(50% 0,100% 32%,78% 100%,22% 100%,0 32%);
+  filter:drop-shadow(0 0 4px rgba(255,255,255,.5));
+}

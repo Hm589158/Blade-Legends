@@ -1,0 +1,78 @@
+/* =========================================================================
+   PART 12 — per-element WEAPON shapes + auto-battle button
+   Reuses the same .weapon box (32×152) and --weapon/--weapon-acc/--el-col vars;
+   only the blade/guard/hilt geometry changes by element.
+   نار=سيف · ماء=رمح · أرض=فأس · هواء=سيف منحنٍ · روح=عصا سحرية
+   ========================================================================= */
+
+/* ---- ماء: رمح (spear) — thin long shaft + leaf tip ---- */
+.knight .w-spear .blade{
+  left:7px; top:-4px; width:18px; height:36px; clip-path:polygon(50% 0,100% 38%,50% 100%,0 38%);
+  background:linear-gradient(var(--weapon-acc), var(--weapon));
+  box-shadow:0 0 var(--glow-w) var(--weapon-acc);
+}
+.knight .w-spear .guard{
+  left:8px; top:30px; width:16px; height:6px; border-radius:3px; background:var(--weapon-acc);
+}
+.knight .w-spear .hilt{
+  left:12px; top:24px; width:6px; height:128px; border-radius:3px;
+  background:linear-gradient(#7a6038, #3a2c16);
+}
+
+/* ---- أرض: فأس (axe) — full handle + bold head near the top ---- */
+.knight .w-axe .hilt{
+  left:12px; top:0; width:7px; height:152px; border-radius:3px;
+  background:linear-gradient(#7a6038, #3a2c16);
+}
+.knight .w-axe .blade{
+  left:15px; top:6px; width:24px; height:42px; border-radius:0 6px 6px 0;
+  background:linear-gradient(120deg, var(--weapon-acc), var(--weapon));
+  clip-path:polygon(0 6%,60% 0,100% 30%,100% 62%,60% 92%,0 74%);
+  box-shadow:0 0 var(--glow-w) var(--weapon-acc);
+}
+.knight .w-axe .guard{ display:none; }
+
+/* ---- هواء: سيف منحنٍ (scimitar) — curved blade ---- */
+.knight .w-scim .blade{
+  left:6px; top:0; width:20px; height:108px;
+  background:linear-gradient(90deg, rgba(255,255,255,.7), var(--weapon-acc) 45%, var(--weapon));
+  clip-path:polygon(42% 0,60% 2%,100% 40%,82% 86%,56% 100%,50% 100%,58% 64%,46% 34%);
+  box-shadow:0 0 var(--glow-w) var(--weapon-acc);
+}
+.knight .w-scim .guard{
+  left:0; top:100px; width:30px; height:9px; border-radius:4px;
+  background:linear-gradient(var(--weapon-acc), var(--weapon));
+}
+.knight .w-scim .hilt{
+  left:11px; top:106px; width:9px; height:36px; border-radius:4px;
+  background:linear-gradient(#5a4a2a, #2a2114);
+}
+
+/* ---- روح: عصا سحرية (staff) — thin rod + glowing orb ---- */
+.knight .w-staff .hilt{
+  left:12px; top:18px; width:6px; height:134px; border-radius:3px;
+  background:linear-gradient(#6a5636, #2e2412);
+}
+.knight .w-staff .guard{
+  left:9px; top:14px; width:12px; height:8px; border-radius:3px; background:var(--weapon-acc);
+}
+.knight .w-staff .blade{
+  left:3px; top:-8px; width:24px; height:24px; border-radius:50%; clip-path:none;
+  background:radial-gradient(circle at 38% 34%, rgba(255,255,255,.95), var(--el-col) 60%, rgba(0,0,0,.2));
+  box-shadow:0 0 16px var(--el-col), 0 0 6px rgba(255,255,255,.7);
+}
+
+/* ---- auto-battle toggle (next to the attack button) ---- */
+.combat-bar{ flex-wrap:wrap; }
+.auto-btn{
+  flex:0 0 auto; padding:11px 14px; border-radius:12px; cursor:pointer; white-space:nowrap;
+  font-family:"Cairo","Amiri"; font-size:13px; font-weight:800; color:var(--gold-soft);
+  border:1.5px solid var(--line); background:rgba(34,22,52,.6);
+  transition:border-color .15s ease, background .15s ease, transform .1s ease;
+}
+.auto-btn:active{ transform:scale(.97); }
+.auto-btn.on{
+  color:#0a0712; border-color:#7cf0a8;
+  background:linear-gradient(180deg, #9af7c0, #5fd99a); box-shadow:0 0 12px rgba(124,240,168,.3);
+}
+@media (prefers-reduced-motion: reduce){ .auto-btn{ transition:none; } .auto-btn:active{ transform:none; } }

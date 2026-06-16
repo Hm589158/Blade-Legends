@@ -1,0 +1,109 @@
+/* =========================================================================
+   Bundled fonts (offline).  Cairo files are the LATIN subset (Latin + digits);
+   Arabic glyphs fall through to Amiri, which ships the full Arabic set.
+   ========================================================================= */
+@font-face{ font-family:"Amiri"; font-style:normal; font-weight:400; font-display:swap;
+  src:url("../fonts/amiri-v30-arabic-regular.woff2") format("woff2"); }
+@font-face{ font-family:"Amiri"; font-style:normal; font-weight:700; font-display:swap;
+  src:url("../fonts/amiri-v30-arabic-700.woff2") format("woff2"); }
+@font-face{ font-family:"Cairo"; font-style:normal; font-weight:400; font-display:swap;
+  src:url("../fonts/cairo-v31-latin-regular.woff2") format("woff2"); }
+@font-face{ font-family:"Cairo"; font-style:normal; font-weight:700; font-display:swap;
+  src:url("../fonts/cairo-v31-latin-700.woff2") format("woff2"); }
+
+    /* =========================================================
+       DESIGN TOKENS
+       ========================================================= */
+    :root{
+      --bg-0:#0a0712;        /* obsidian            */
+      --bg-1:#160f2a;        /* deep violet         */
+      --bg-2:#221634;        /* raised panel        */
+      --bg-3:#2c1d44;        /* panel highlight     */
+      --gold:#e8b94a;        /* illumination        */
+      --gold-soft:#f5d98a;
+      --gold-deep:#8a6418;
+      --ink:#ece7ff;         /* primary text        */
+      --muted:#9a93b8;       /* secondary text      */
+      --line:rgba(232,185,74,.22); /* gilded hairline */
+
+      --el-fire:#ff5a3c; --el-water:#3ba3ff; --el-earth:#c39a52;
+      --el-air:#74e0a8;  --el-spirit:#c77dff;
+
+      --rar-common:#9aa0b5; --rar-rare:#45a6ff;
+      --rar-epic:#c77dff;   --rar-legendary:#f5c542;
+    }
+
+    *{box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent;}
+    html,body{height:100%;}
+    body{
+      font-family:"Cairo","Amiri",system-ui,sans-serif;
+      color:var(--ink);
+      background:#000;
+      display:flex; justify-content:center;
+      overflow:hidden;
+    }
+
+    /* =========================================================
+       PHONE SHELL (portrait)
+       ========================================================= */
+    .phone{
+      position:relative;
+      width:100%; max-width:430px; height:100dvh; max-height:932px;
+      display:flex; flex-direction:column;
+      overflow:hidden;
+      background:
+        radial-gradient(120% 60% at 50% -8%, #2a1750 0%, transparent 55%),
+        radial-gradient(90% 50% at 50% 108%, #1a0f33 0%, transparent 55%),
+        linear-gradient(180deg, var(--bg-1) 0%, var(--bg-0) 100%);
+    }
+    /* faint star vignette */
+    .phone::before{
+      content:""; position:absolute; inset:0; pointer-events:none; opacity:.5;
+      background:
+        radial-gradient(1px 1px at 20% 30%, rgba(255,255,255,.5), transparent),
+        radial-gradient(1px 1px at 80% 18%, rgba(255,255,255,.4), transparent),
+        radial-gradient(1px 1px at 62% 42%, rgba(255,255,255,.35), transparent),
+        radial-gradient(1px 1px at 35% 12%, rgba(255,255,255,.3), transparent);
+    }
+
+    /* =========================================================
+       TOP BAR
+       ========================================================= */
+    .topbar{
+      position:relative; z-index:2;
+      display:flex; align-items:center; justify-content:space-between;
+      padding:14px 16px 12px;
+      border-bottom:1px solid var(--line);
+      background:linear-gradient(180deg, rgba(34,22,52,.85), transparent);
+    }
+    .brand{
+      position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+      font-family:"Amiri",serif; font-size:19px; letter-spacing:.5px;
+      color:var(--gold-soft); text-shadow:0 0 12px rgba(232,185,74,.4);
+      pointer-events:none; white-space:nowrap;
+    }
+    .level-badge{
+      display:flex; flex-direction:column; align-items:center;
+      width:44px; height:44px; border-radius:50%;
+      justify-content:center;
+      background:radial-gradient(circle at 50% 30%, var(--bg-3), var(--bg-2));
+      border:1.5px solid var(--gold); box-shadow:0 0 14px rgba(232,185,74,.25);
+    }
+    .level-badge .lvl-num{font-weight:800; font-size:17px; line-height:1; color:var(--gold-soft);}
+    .level-badge .lvl-cap{font-size:8px; color:var(--muted); margin-top:1px;}
+    .currencies{display:flex; flex-direction:column; gap:5px; align-items:flex-end;}
+    .coin{
+      font-size:13px; font-weight:600;
+      padding:3px 9px; border-radius:11px;
+      background:rgba(10,7,18,.55); border:1px solid var(--line);
+      min-width:74px; text-align:center;
+    }
+    .coin.gold{color:var(--gold-soft);}
+    .coin.gem{color:#a8d8ff;}
+
+    /* =========================================================
+       CONTENT / PANELS
+       ========================================================= */
+    .content{position:relative; z-index:1; flex:1; overflow-y:auto; overflow-x:hidden;}
+    .panel{padding:8px 16px 18px; min-height:100%;}
+

@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>أساطير النصل</title>
+
+  <!-- Engine, libraries + game scripts load offline-first via the bootstrap at the end of <body>. -->
+
+  <!-- Fonts are bundled locally (see @font-face in css/01-base.css) — fully offline. -->
+
+  <!-- Styles are split into ordered, themed files (cascade order preserved). -->
+  <link rel="stylesheet" href="css/01-base.css">
+  <link rel="stylesheet" href="css/02-characters.css">
+  <link rel="stylesheet" href="css/03-ui.css">
+  <link rel="stylesheet" href="css/04-battle.css">
+  <link rel="stylesheet" href="css/05-screens.css">
+  <link rel="stylesheet" href="css/06-landscape.css">
+  <link rel="stylesheet" href="css/07-market.css">
+  <link rel="stylesheet" href="css/08-responsive.css">
+  <link rel="stylesheet" href="css/09-overlays.css">
+  <link rel="stylesheet" href="css/10-weapons.css">
+  <link rel="stylesheet" href="css/11-neon.css">
+</head>
+<body>
+  <!-- professional loading screen (fades out once the app mounts) -->
+  <div id="loader">
+    <div class="ld-inner">
+      <div class="ld-ring"></div>
+      <div class="ld-emblem">⚔️</div>
+      <div class="ld-title">أساطير النصل</div>
+      <div class="ld-bar"><span class="ld-bar-fill"></span></div>
+      <div class="ld-sub">جارٍ التحميل…</div>
+    </div>
+  </div>
+
+  <div id="app">
+    <!-- portrait: ask to rotate to landscape -->
+    <div class="rotate-prompt">
+      <div class="rp-inner"><div class="rp-icon">🔄</div><p>أدِر هاتفك أفقياً للّعب</p></div>
+    </div>
+
+    <div class="phone">
+      <!-- ===== LEFT NAV RAIL ===== -->
+      <nav class="railnav">
+        <div class="rail-power"><span class="rp-num">{{ partyPower }}</span><span class="rp-cap">قوة</span></div>
+        <button v-for="t in tabs" :key="t.key" :class="['rail-tab',{active: state.tab===t.key}]" @click="state.tab=t.key">
+          <span class="rt-ic">{{ t.icon }}</span>
+          <span class="rt-lb">{{ t.label }}</span>
+        </button>
+        <button class="rail-sound icon-btn" aria-label="الإعدادات" @click="openSettings">⚙️</button>
+      </nav>
+
+      <!-- ===== STAGE (hud + content) ===== -->
+      <div class="stage">
+        <header class="hud">
+          <span class="brand">أساطير النصل</span>
+          <div class="hud-mats">
+            <span class="res-chip">⛓️ {{ state.materials.iron }}</span>
+            <span class="res-chip">🔷 {{ state.materials.crystal }}</span>
+            <span class="res-chip">💠 {{ state.materials.essence }}</span>
+          </div>
+          <div class="currencies">
+            <span class="coin gold">🪙 {{ state.player.gold }}</span>
+            <span class="coin gem">💎 {{ state.player.gems }}</span>
+          </div>
+        </header>
+
+        <main class="content">
+
+          <!-- ---------- DUNGEONS ---------- -->
+          <section v-show="state.tab==='dungeons'" class="panel">
+
+            <!-- combat (relay) -->
+            <div v-if="state.combat.active" class="combat">
+              <div class="combat-top">
+                <span class="wave-pill">الموجة {{ state.combat.wave+1 }}/{{ state.combat.waves.length }}</span>
+                <span v-if="state.combat.enemy.isBoss" class="boss-pill">👑 زعيم</span>
+                <span v-for="a in state.combat.affixes" :key="a" class="affix-chip sm" :title="affixDefs[a].desc">{{ affixDefs[a].icon }} {{ affixDefs[a].nameAr }}</span>
+              </div>
+              <div class="hpbar">
+                <div class="hp-top">
+                  <span class="hp-name">{{ state.combat.enemy.name }}
+                    <span class="ebadge sm" :style="{background: elementColor(state.combat.enemy.element)}">{{ state.combat.enemy.element }}</span>
+                  </span>
+                  <span class="hp-num">{{ state.combat.enemy.hp }} / {{ state.combat.enemy.maxHp }}</span>
+                </div>
+                <div class="hp-track"><div class="hp-fill foe" :class="{low: state.combat.enemy.hp < state.combat.enemy.maxHp*0.3}" :style="{width: pct(state.combat.enemy.hp, state.combat.enemy.maxHp)}"></div></div>
+              </div>
+
+              <div class="arena">
+                <div class="fx-particles" id="fxParticles"></div>
+                <div class="formation">
+                  <div v-for="(h,i) in state.heroes" :key="h.id" class="fighter" :class="{active: isActive(i) && !state.combat.result}" :style="fighterStyle(i)">
+                    <div class="knight" :class="neonClass(h)" :style="heroVars(h)">
+                      <div class="aura"></div><div class="aura-rays"></div><div class="aura-ring"></div><div class="aura-sparks"></div>
+                      <div class="legs"></div>
+                      <div class="body"><div class="pauldron left"></div><div class="pauldron right"></div><div class="emblem"></div></div><div class="spikes"><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="aura-core"></div><div class="shine"></div>
+                      <div class="weapon" :class="weaponClass(h)"><div class="blade"></div><div class="guard"></div><div class="hilt"></div></div>
+                      <div class="helmet"><div class="crest"></div><div class="visor"></div></div><div class="aura-crown"></div><div class="hspikes"><i></i><i></i><i></i><i></i></div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="vs">⚔</div>
+
+                <div class="monster" :class="{boss: state.combat.enemy && state.combat.enemy.isBoss}" :style="enemyVars">
+                  <div class="m-aura"></div>
+                  <div class="m-wing left"></div><div class="m-wing right"></div>
+                  <div class="m-body"></div>
+                  <div class="m-head"><div class="m-horn left"></div><div class="m-horn right"></div><div class="m-eye left"></div><div class="m-eye right"></div></div>
+                </div>
+
+                <div v-for="f in state.floaters" :key="f.id" class="floater" :style="floaterStyle(f)">{{ f.text }}</div>
+              </div>
+
+              <!-- relay roster (order + hp) -->
+              <div class="roster">
+                <div v-for="(h,i) in state.heroes" :key="h.id" class="rtoken" :class="{active: isActive(i) && !state.combat.result, down: state.combat.hp[i]<=0}">
+                  <span class="rt-dot" :style="{background: setDot(h)}"></span>
+                  <div class="rt-body">
+                    <span class="rt-name">#{{ i+1 }} {{ heroName(h) }}<small v-if="isActive(i) && !state.combat.result"> ⚔</small></span>
+                    <div class="hp-track sm"><div class="hp-fill hero" :style="{width: pct(state.combat.hp[i], heroMax(i))}"></div></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="combat-bar" v-if="!state.combat.result">
+                <div class="cb-info">
+                  <span class="turn-ind" :class="state.combat.turn">{{ state.combat.turn==='player' ? '⚔️ دورك' : '⏳ العدو…' }}</span>
+                  <span class="cb-log">{{ lastLog[lastLog.length-1] }}</span>
+                </div>
+                <button class="auto-btn" :class="{on: state.combat.auto}" @click="toggleAuto">{{ state.combat.auto ? '⏸︎ تلقائي' : '▶︎ تلقائي' }}</button>
+                <button class="btn-primary atk" :disabled="state.combat.turn!=='player' || state.combat.busy" @click="onAttack">هجوم!</button>
+              </div>
+
+              <transition name="fade">
+                <div v-if="state.combat.result" class="result-overlay">
+                  <div class="result-card" :class="state.combat.result">
+                    <template v-if="state.combat.result==='win'">
+                      <div class="res-emoji">🏆</div>
+                      <h2>النصر!</h2>
+                      <div class="res-stars"><span v-for="n in 3" :key="n" class="rst" :class="{on: state.combat.reward.stars >= n}">★</span></div>
+                      <ul class="res-loot">
+                        <li v-for="(l,li) in state.combat.reward.lines" :key="li" :class="{bonus: l.bonus, fc: l.firstClear}">
+                          <template v-if="l.kind==='gold'">+{{ l.amt }} 🪙 ذهب</template>
+                          <template v-else-if="l.kind==='gems'">+{{ l.amt }} 💎 جوهرة<small v-if="l.firstClear"> · أوّل إتمام</small></template>
+                          <template v-else>+{{ l.amt }} {{ matIcon(l.mat) }} {{ matName(l.mat) }}</template>
+                          <small v-if="l.bonus" class="bonus-tag"> مكافأة!</small>
+                        </li>
+                      </ul>
+                      <button class="btn-primary" @click="closeCombat">متابعة</button>
+                    </template>
+                    <template v-else>
+                      <div class="res-emoji">💀</div>
+                      <h2>الهزيمة</h2>
+                      <p class="res-reward muted">سقط فريقك. رقِّ عتادك ثم عُد.</p>
+                      <button class="btn-primary" @click="retryDungeon">إعادة المحاولة</button>
+                      <button class="btn-secondary" @click="closeCombat">انسحاب</button>
+                    </template>
+                  </div>
+                </div>
+              </transition>
+            </div>
+
+            <!-- dungeon list -->
+            <template v-else>
+              <h2 class="inv-title">الزنزانات</h2>
+              <p class="hint">قوة فريقك: <b style="color:var(--gold-soft)">{{ partyPower }}</b> — كل زنزانة عدّة مراحل وزعيم. ارفع الصعوبة لمكافآت أكبر.</p>
+              <div class="dungeon-list">
+                <button v-for="d in dungeons" :key="d.id" class="dungeon-card" :class="{locked: !isUnlocked(d)}" :disabled="!isUnlocked(d)" @click="openPreview(d)">
+                  <span class="dg-dot" :style="{background: elementColor(d.element), color: elementColor(d.element)}"></span>
+                  <div class="dg-main">
+                    <span class="dg-name">{{ d.nameAr }} <small>· {{ previewWaves(d) }} مراحل</small></span>
+                    <span class="dg-meta">الزعيم: {{ d.enemy.name }} · ◆ {{ d.element }}</span>
+                    <span class="dg-stars" v-if="isUnlocked(d)">
+                      <span v-for="n in 3" :key="n" class="st" :class="{on: bestStars(d) >= n}">★</span>
+                      <small v-if="diffUnlocked(d,2)"> · كابوس مفتوح</small>
+                      <small v-else-if="diffUnlocked(d,1)"> · صعب مفتوح</small>
+                    </span>
+                  </div>
+                  <span v-if="isUnlocked(d)" class="dg-power" :class="{warn: partyPower < d.power}">⚔ {{ d.power }}</span>
+                  <span v-else class="dg-lock">🔒</span>
+                </button>
+              </div>
+
+              <!-- dungeon preview / difficulty picker -->
+              <transition name="fade">
+                <div v-if="state.preview.open" class="result-overlay" @click.self="closePreview">
+                  <div class="preview-card" v-if="state.preview.dungeon">
+                    <span class="pv-dot" :style="{background: elementColor(state.preview.dungeon.element)}"></span>
+                    <h3 class="pv-title">{{ state.preview.dungeon.nameAr }}</h3>
+                    <p class="pv-sub">الزعيم: {{ state.preview.dungeon.enemy.name }} · ◆ {{ state.preview.dungeon.element }} · {{ previewWaves(state.preview.dungeon) }} مراحل</p>
+
+                    <div class="pv-diffs">
+                      <button v-for="df in difficulties" :key="df.id" class="pv-diff"
+                              :class="{sel: state.preview.diff===df.id, locked: !diffUnlocked(state.preview.dungeon, df.id)}"
+                              :disabled="!diffUnlocked(state.preview.dungeon, df.id)" @click="setPreviewDiff(df.id)">
+                        <span class="pvd-name">{{ df.nameAr }}</span>
+                        <span class="pvd-stars"><span v-for="n in 3" :key="n" :class="{on: starsFor(state.preview.dungeon, df.id) >= n}">★</span></span>
+                        <small v-if="!diffUnlocked(state.preview.dungeon, df.id)">🔒</small>
+                      </button>
+                    </div>
+
+                    <div class="pv-affixes" v-if="previewAffixes(state.preview.diff).length">
+                      <span class="pv-label">تعديلات:</span>
+                      <span v-for="a in previewAffixes(state.preview.diff)" :key="a.nameAr" class="affix-chip" :title="a.desc">{{ a.icon }} {{ a.nameAr }}</span>
+                    </div>
+
+                    <div class="pv-row">
+                      <span>قوّتك <b :class="{warn: partyPower < state.preview.dungeon.power}">⚔ {{ partyPower }}</b></span>
+                      <span class="pv-vs">موصى به ⚔ {{ state.preview.dungeon.power }}</span>
+                    </div>
+                    <p v-if="partyPower < state.preview.dungeon.power" class="pv-warn">⚠ قوّتك أقل من الموصى به — قد تكون المعركة صعبة.</p>
+
+                    <div class="pv-reward">
+                      <span class="pv-label">المكافآت:</span>
+                      🪙 {{ state.preview.dungeon.gold[0] }}–{{ state.preview.dungeon.gold[1] }} ·
+                      {{ matIcon(state.preview.dungeon.mat.type) }} {{ state.preview.dungeon.mat.amt[0] }}–{{ state.preview.dungeon.mat.amt[1] }}
+                      <small>(تكبر مع الصعوبة)</small>
+                    </div>
+
+                    <button class="btn-primary" @click="previewStart">⚔ ابدأ المعركة</button>
+                    <button class="btn-secondary" @click="closePreview">رجوع</button>
+                  </div>
+                </div>
+              </transition>
+            </template>
+          </section>
+
+          <!-- ---------- PARTY ---------- -->
+          <section v-show="state.tab==='party'" class="panel">
+            <h2 class="inv-title">الفريق <small class="sub-note">— ترتيب القتال: الأول، ثم التالي عند سقوطه</small></h2>
+            <div class="hero-grid">
+              <div v-for="(h,i) in state.heroes" :key="h.id" class="hero-card">
+                <div class="hc-top">
+                  <div class="hero-slot sm">
+                    <div class="knight" :class="neonClass(h)" :style="heroVars(h)">
+                      <div class="aura"></div><div class="aura-rays"></div><div class="aura-ring"></div><div class="aura-sparks"></div>
+                      <div class="legs"></div>
+                      <div class="body"><div class="pauldron left"></div><div class="pauldron right"></div><div class="emblem"></div></div><div class="spikes"><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="aura-core"></div><div class="shine"></div>
+                      <div class="weapon" :class="weaponClass(h)"><div class="blade"></div><div class="guard"></div><div class="hilt"></div></div>
+                      <div class="helmet"><div class="crest"></div><div class="visor"></div></div><div class="aura-crown"></div><div class="hspikes"><i></i><i></i><i></i><i></i></div>
+                    </div>
+                  </div>
+                  <span class="hc-order">#{{ i+1 }}</span>
+                </div>
+                <div class="hc-info">
+                  <span class="hc-name" :style="{color: setColor(h)}">{{ heroName(h) }}<b v-if="h.set && h.set.level" class="plus-inline"> +{{ h.set.level }}</b></span>
+                  <span class="hc-sub">رتبة {{ h.level }} · <i :style="{color: elementColor(heroEl(h))}">◆ {{ heroEl(h) }}</i> · {{ elementTrait(heroEl(h)) }}</span>
+                  <div class="hc-stats">⚔ {{ hs(i).atk }} · 🛡 {{ hs(i).def }} · ❤ {{ hs(i).hp }} · <b style="color:var(--gold-soft)">قوة {{ heroPower(i) }}</b></div>
+                  <div class="hc-actions">
+                    <button class="mini-btn" :disabled="!canEnhance(h)" @click="enhanceHeroSet(i)">رقِّ العتاد · {{ enhanceLabel(h) }}</button>
+                    <button class="mini-btn" :disabled="!canUpgradeHero(h)" @click="upgradeHero(i)">رقِّ البطل · {{ heroUpLabel(h) }}</button>
+                    <button class="mini-btn alt" @click="openSwap(i)">بدّل العتاد</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <transition name="fade">
+              <div v-if="state.swapIdx!==null" class="result-overlay" @click.self="closeSwap">
+                <div class="swap-card">
+                  <h3 class="swap-title">اختر طقماً للبطل</h3>
+                  <div v-if="state.sets.length===0" class="placeholder small"><p>لا أطقم في المخزن. اصنع طقماً من «التصنيع».</p></div>
+                  <div v-else class="set-grid">
+                    <div v-for="s in state.sets" :key="s.id" class="set-card" :style="{borderColor:s.rarityColor}" @click="equipFromSwap(s)">
+                      <div class="set-mini" :style="{background:'radial-gradient(circle at 50% 35%,'+s.colors.accent+','+s.colors.primary+' 60%,'+s.colors.secondary+')'}"></div>
+                      <span class="set-name" :style="{color:s.rarityColor}">{{ s.name }}<b v-if="s.level"> +{{ s.level }}</b></span>
+                      <span class="set-meta" :style="{color: elementColor(s.element)}">◆ {{ s.element }}</span>
+                    </div>
+                  </div>
+                  <button class="btn-secondary" @click="closeSwap">إغلاق</button>
+                </div>
+              </div>
+            </transition>
+          </section>
+
+          <!-- ---------- CRAFT ---------- -->
+          <section v-show="state.tab==='craft'" class="panel">
+            <h2 class="inv-title">التصنيع</h2>
+            <div class="craft-cols">
+              <div class="craft-left">
+                <p class="lbl">المستوى</p>
+                <div class="tier-pick">
+                  <button v-for="t in tiers" :key="t.tier" :class="['tier-btn',{on: state.craftTier===t.tier}]" @click="state.craftTier=t.tier">
+                    <span class="tier-dot" :style="{background: ({common:'#9aa0b5',rare:'#45a6ff',epic:'#c77dff',legendary:'#f5c542'})[t.rarity]}"></span>
+                    <span>{{ t.nameAr }}</span>
+                  </button>
+                </div>
+
+                <p class="lbl">العنصر</p>
+                <div class="el-pick">
+                  <button v-for="el in elements" :key="el" :class="['el-btn',{on: state.craftElement===el}]" :style="state.craftElement===el ? {borderColor: elementColor(el), color: elementColor(el)} : {}" @click="state.craftElement=el">
+                    <span class="el-dot" :style="{background: elementColor(el)}"></span>{{ el }}
+                  </button>
+                </div>
+
+                <div class="forge-preview">
+                  <div class="prev-row"><span>الندرة</span><b :style="{color: ({common:'#9aa0b5',rare:'#45a6ff',epic:'#c77dff',legendary:'#f5c542'})[tierObj.rarity]}">{{ tierObj.nameAr }}</b></div>
+                  <div class="prev-row"><span>الميزة</span><b :style="{color: elementColor(state.craftElement)}">{{ elementTrait(state.craftElement) }}</b></div>
+                  <div class="prev-cost"><span>التكلفة</span><b :class="{poor: !canCraft}">{{ costLabel(craftCostObj) }}</b></div>
+                </div>
+
+                <button class="btn-primary" :disabled="!canCraft" @click="doCraft">⚒️ اصنع طقماً</button>
+
+                <transition name="pop">
+                  <div v-if="state.craftResult" class="forge-result">
+                    <span class="fr-title">⚒️ طقم جديد</span>
+                    <span class="fr-line" :style="{color: state.craftResult.rarityColor}">{{ state.craftResult.name }}</span>
+                    <span class="fr-gains">◆ {{ state.craftResult.element }} · ⚔ {{ state.craftResult.baseStats.atk }} · 🛡 {{ state.craftResult.baseStats.def }} · ❤ {{ state.craftResult.baseStats.hp }}</span>
+                  </div>
+                </transition>
+              </div>
+
+              <div class="craft-right">
+                <h3 class="forge-sub">المخزن — جهّزها من «الفريق»</h3>
+                <div v-if="state.sets.length===0" class="placeholder small"><p>لا أطقم بعد. اصنع طقماً.</p></div>
+                <div v-else class="set-grid">
+                  <div v-for="s in state.sets" :key="s.id" class="set-card display" :style="{borderColor:s.rarityColor}">
+                    <div class="set-mini" :style="{background:'radial-gradient(circle at 50% 35%,'+s.colors.accent+','+s.colors.primary+' 60%,'+s.colors.secondary+')'}"></div>
+                    <span class="set-name" :style="{color:s.rarityColor}">{{ s.name }}<b v-if="s.level"> +{{ s.level }}</b></span>
+                    <span class="set-meta" :style="{color: elementColor(s.element)}">◆ {{ s.element }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ---------- MARKET ---------- -->
+          <section v-show="state.tab==='market'" class="panel">
+            <div class="market-head">
+              <h2 class="inv-title">السوق</h2>
+              <div class="gem-balance">💎 {{ state.player.gems }}</div>
+              <div class="mk-subtabs">
+                <button :class="['mk-subtab',{on: state.marketTab==='shop'}]" @click="state.marketTab='shop'">المتجر</button>
+                <button :class="['mk-subtab',{on: state.marketTab==='trade'}]" @click="state.marketTab='trade'">التبادل</button>
+              </div>
+            </div>
+
+            <!-- SHOP -->
+            <div v-show="state.marketTab==='shop'">
+              <div class="mk-bar">
+                <span class="mk-note">🔄 يتجدّد المتجر يومياً — العتاد يُشترى بالجواهر فقط</span>
+                <button class="mini-btn alt" :disabled="state.player.gems < rerollCost" @click="rerollMarket">تحديث فوري · 💎{{ rerollCost }}</button>
+              </div>
+
+              <div v-if="state.market.featured" class="featured" :class="{sold: state.market.featured.sold}" :style="{borderColor: state.market.featured.rarityColor}">
+                <span class="ft-badge">مميّز · محدود</span>
+                <div class="ft-art" :style="{background: setBg(state.market.featured)}"></div>
+                <div class="ft-info">
+                  <span class="ft-name" :style="{color: state.market.featured.rarityColor}">{{ state.market.featured.name }}</span>
+                  <span class="ft-sub"><i :style="{color: elementColor(state.market.featured.element)}">◆ {{ state.market.featured.element }}</i> · {{ elementTrait(state.market.featured.element) }}</span>
+                  <span class="ft-stats">⚔ {{ state.market.featured.baseStats.atk }} · 🛡 {{ state.market.featured.baseStats.def }} · ❤ {{ state.market.featured.baseStats.hp }}</span>
+                </div>
+                <button class="buy-btn" :disabled="state.market.featured.sold || state.player.gems < state.market.featured.gemCost" @click="openBuy(state.market.featured)">
+                  {{ state.market.featured.sold ? 'نفد' : ('💎 ' + state.market.featured.gemCost) }}
+                </button>
+              </div>
+
+              <h3 class="forge-sub">معروضات اليوم</h3>
+              <div class="offer-grid">
+                <div v-for="o in state.market.offers" :key="o.id" class="offer-card" :class="{sold: o.sold}" :style="{borderColor: o.rarityColor}">
+                  <div class="set-mini" :style="{background: setBg(o)}"></div>
+                  <span class="set-name" :style="{color: o.rarityColor}">{{ o.name }}</span>
+                  <span class="set-meta" :style="{color: elementColor(o.element)}">◆ {{ o.element }}</span>
+                  <span class="of-stats">⚔{{ o.baseStats.atk }} 🛡{{ o.baseStats.def }} ❤{{ o.baseStats.hp }}</span>
+                  <button class="buy-btn sm" :disabled="o.sold || state.player.gems < o.gemCost" @click="openBuy(o)">{{ o.sold ? 'نفد' : ('💎 ' + o.gemCost) }}</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- TRADE -->
+            <div v-show="state.marketTab==='trade'">
+              <h3 class="forge-sub">بدّل مواردك بجواهر</h3>
+              <div class="ex-list">
+                <div v-for="ex in exchanges" :key="ex.id" class="ex-row">
+                  <span class="ex-give">{{ exGive(ex) }}</span>
+                  <span class="ex-arrow">←</span>
+                  <span class="ex-get">💎 {{ ex.gem }}</span>
+                  <button class="mini-btn" :disabled="!canExchange(ex)" @click="doExchange(ex)">بدّل</button>
+                </div>
+              </div>
+
+              <h3 class="forge-sub">بِع أطقمك الفائضة</h3>
+              <div v-if="state.sets.length===0" class="placeholder small"><p>لا أطقم في المخزن للبيع.</p></div>
+              <div v-else class="sell-list">
+                <div v-for="s in state.sets" :key="s.id" class="sell-row" :style="{borderColor: s.rarityColor}">
+                  <div class="set-mini xs" :style="{background: setBg(s)}"></div>
+                  <div class="sell-info">
+                    <span class="set-name" :style="{color: s.rarityColor}">{{ s.name }}<b v-if="s.level"> +{{ s.level }}</b></span>
+                    <span class="set-meta" :style="{color: elementColor(s.element)}">◆ {{ s.element }}</span>
+                  </div>
+                  <button class="mini-btn alt" @click="sellSet(s)">بِع · 💎{{ sellGems(s) }}</button>
+                </div>
+              </div>
+            </div>
+
+            <transition name="fade">
+              <div v-if="state.buyTarget" class="result-overlay" @click.self="closeBuy">
+                <div class="buy-card" :style="{borderColor: state.buyTarget.rarityColor}">
+                  <h3 class="swap-title">تأكيد الشراء</h3>
+                  <div class="buy-preview">
+                    <div class="set-mini lg" :style="{background: setBg(state.buyTarget)}"></div>
+                    <span class="set-name" :style="{color: state.buyTarget.rarityColor}">{{ state.buyTarget.name }}</span>
+                    <span class="set-meta" :style="{color: elementColor(state.buyTarget.element)}">◆ {{ state.buyTarget.element }} · {{ elementTrait(state.buyTarget.element) }}</span>
+                    <span class="buy-stats">⚔ {{ state.buyTarget.baseStats.atk }} · 🛡 {{ state.buyTarget.baseStats.def }} · ❤ {{ state.buyTarget.baseStats.hp }}</span>
+                  </div>
+                  <div class="buy-cost">التكلفة: <b>💎 {{ state.buyTarget.gemCost }}</b></div>
+                  <div class="buy-actions">
+                    <button class="btn-primary" :disabled="state.player.gems < state.buyTarget.gemCost" @click="confirmBuy">تأكيد الشراء</button>
+                    <button class="btn-secondary" @click="closeBuy">إلغاء</button>
+                  </div>
+                </div>
+              </div>
+            </transition>
+          </section>
+
+        </main>
+      </div>
+    </div>
+
+    <!-- ===== Settings modal ===== -->
+    <transition name="fade">
+      <div v-if="state.settingsOpen" class="result-overlay" @click.self="closeSettings">
+        <div class="settings-card">
+          <h3 class="swap-title">الإعدادات</h3>
+
+          <div class="set-row">
+            <span>الصوت</span>
+            <button class="mini-btn alt" @click="toggleSound">{{ state.settings.sound ? '🔊 مفعّل' : '🔇 مكتوم' }}</button>
+          </div>
+
+          <div class="set-block">
+            <span class="set-label">كود ترويجي (Promo)</span>
+            <div class="promo-row">
+              <input class="promo-input" type="text" v-model="state.promoInput" placeholder="أدخل الكود هنا" @keyup.enter="redeemPromo" />
+              <button class="mini-btn" @click="redeemPromo">تفعيل</button>
+            </div>
+            <p v-if="state.promoMsg" class="promo-msg" :class="{ok: state.promoOk}">{{ state.promoMsg }}</p>
+          </div>
+
+          <div class="set-row">
+            <span>تصفير التقدّم</span>
+            <button class="reset-btn sm" :class="{armed: resetArmed}" @click="resetGame">{{ resetArmed ? '⚠️ اضغط للتأكيد' : '↺ تصفير' }}</button>
+          </div>
+
+          <div class="set-info">أساطير النصل · إصدار ١٫٠</div>
+          <button class="btn-secondary" @click="closeSettings">إغلاق</button>
+        </div>
+      </div>
+    </transition>
+  </div>
+
+  <!-- ===== Bootstrap: load engine + libraries offline-first, then game scripts =====
+       Everything is bundled locally under js/Libraries (Vue, GSAP, Tone.js, tsParticles,
+       localForage). If local Vue is missing it falls back to the CDN once. A missing
+       optional library never blocks the game — the code feature-checks each one. -->
+  <script>
+  (function () {
+    function loadSeq(srcs) {
+      var i = 0;
+      (function next() {
+        if (i >= srcs.length) return;
+        var s = document.createElement('script');
+        s.src = srcs[i++];
+        s.onload = next;
+        s.onerror = function () { console.error('[أساطير النصل] فشل تحميل', s.src); next(); };
+        document.body.appendChild(s);
+      })();
+    }
+    function startGame() {
+      loadSeq([
+        'js/Libraries/gsap.min.js',
+        'js/Libraries/Tone.js',
+        'js/Libraries/localforage.min.js',
+        'js/Libraries/tsparticles.bundle.min.js',
+        'js/constants.js', 'js/gear.js', 'js/battle.js', 'js/audio.js', 'js/persist.js', 'js/app.js'
+      ]);
+    }
+    var local = document.createElement('script');
+    local.src = 'js/Libraries/vue.global.prod.js';
+    local.onload = startGame;
+    local.onerror = function () {
+      var cdn = document.createElement('script');
+      cdn.src = 'https://unpkg.com/vue@3/dist/vue.global.prod.js';
+      cdn.onload = startGame;
+      cdn.onerror = function () {
+        document.body.innerHTML = '<div style="color:#f5d98a;font-family:sans-serif;direction:rtl;padding:28px;line-height:1.9">تعذّر تحميل محرّك اللعبة.<br>ضع الملف <b>vue.global.prod.js</b> داخل مجلد <b>js/Libraries</b> لتعمل اللعبة دون إنترنت.</div>';
+      };
+      document.head.appendChild(cdn);
+    };
+    document.head.appendChild(local);
+  })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,230 @@
+/* =========================================================
+   PART 2 — battle: HP bars, turn UI, log, floaters, overlay
+   ========================================================= */
+.battle{position:relative;} /* positioning context for the result overlay */
+
+.hpbar{margin:6px 2px;}
+.hp-top{display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;}
+.hp-name{font-family:"Amiri",serif; font-size:14.5px; color:var(--ink); display:flex; align-items:center; gap:7px;}
+.hp-num{font-size:12px; color:var(--muted); font-weight:600;}
+.ebadge.sm{font-size:10px; padding:1px 8px; color:#fff;}
+.hp-track{height:11px; border-radius:7px; overflow:hidden;
+  background:rgba(10,7,18,.7); border:1px solid var(--line);}
+.hp-fill{height:100%; border-radius:7px; transition:width .45s cubic-bezier(.3,1,.4,1);}
+.hp-fill.foe{background:linear-gradient(90deg,#ff7a5c,#b0202e);}
+.hp-fill.hero{background:linear-gradient(90deg,#7cf0a8,#2bb673);}
+
+/* turn indicator */
+.turn-ind{text-align:center; font-weight:700; font-size:14px; padding:9px; margin:6px 0 12px;
+  border-radius:12px; border:1px solid var(--line); background:rgba(34,22,52,.55);}
+.turn-ind.player{color:var(--gold-soft); box-shadow:inset 0 0 0 1px rgba(232,185,74,.25);}
+.turn-ind.enemy{color:#ff9a8a;}
+
+/* secondary button */
+.btn-secondary{
+  width:100%; margin-top:10px; padding:12px; border-radius:13px; cursor:pointer;
+  font-family:"Cairo","Amiri",sans-serif; font-weight:700; font-size:14.5px; color:var(--gold-soft);
+  background:rgba(34,22,52,.7); border:1px solid var(--line);
+  transition:transform .12s ease, filter .12s ease;
+}
+.btn-secondary:active{transform:translateY(2px) scale(.99);}
+.btn-secondary:disabled{filter:saturate(.4) brightness(.8); cursor:default;}
+.btn-secondary:focus-visible{outline:2px solid var(--gold-soft); outline-offset:2px;}
+
+/* battle log */
+.log{margin-top:12px; padding:10px 12px; border-radius:12px; min-height:64px;
+  background:rgba(10,7,18,.5); border:1px solid var(--line);
+  display:flex; flex-direction:column; justify-content:flex-end; gap:3px;}
+.log p{font-size:12.5px; color:var(--muted); line-height:1.5;}
+.log p:last-child{color:var(--ink);}
+
+/* floating damage numbers (rendered inside .arena) */
+.floater{position:absolute; font-weight:800; font-size:21px; pointer-events:none; z-index:9;
+  text-shadow:0 2px 6px rgba(0,0,0,.8); animation:floatUp .85s ease-out forwards;}
+@keyframes floatUp{
+  0%{opacity:0; transform:translateY(0) scale(.6);}
+  20%{opacity:1; transform:translateY(-12px) scale(1.15);}
+  100%{opacity:0; transform:translateY(-50px) scale(1);}
+}
+
+/* result overlay */
+.result-overlay{position:absolute; inset:0; z-index:20;
+  display:flex; align-items:center; justify-content:center; padding:24px;
+  background:rgba(8,6,16,.78); -webkit-backdrop-filter:blur(3px); backdrop-filter:blur(3px);}
+.result-card{width:100%; max-width:320px; text-align:center; padding:26px 20px 22px;
+  border-radius:20px; border:2px solid var(--gold);
+  background:linear-gradient(180deg,var(--bg-2),var(--bg-1));}
+.result-card.lose{border-color:#7a2230;}
+.res-emoji{font-size:54px; filter:drop-shadow(0 0 18px rgba(232,185,74,.5));}
+.result-card.lose .res-emoji{filter:drop-shadow(0 0 18px rgba(176,32,46,.5));}
+.result-card h2{font-family:"Amiri",serif; font-size:30px; margin:4px 0 10px; color:var(--gold-soft);}
+.result-card.lose h2{color:#ff8a7a;}
+.res-reward{font-size:16px; font-weight:700; color:var(--gold-soft); margin-bottom:14px;}
+.res-reward.muted{color:var(--muted); font-weight:600; font-size:14px;}
+.result-card .btn-primary{margin-top:4px;}
+.drop-card.mini{margin:0 0 16px; padding:11px 13px; text-align:right;}
+.drop-hint{font-size:11.5px; color:var(--muted); margin-top:6px; line-height:1.5;}
+
+/* fade transition for the overlay */
+.fade-enter-active,.fade-leave-active{transition:opacity .25s ease;}
+.fade-enter-from,.fade-leave-to{opacity:0;}
+
+@media (prefers-reduced-motion: reduce){
+  .floater{animation:none;}
+  .hp-fill,.btn-secondary{transition:none;}
+}
+
+/* =========================================================
+   PART 3 — forge (fusion) + gear badges
+   ========================================================= */
+.forge .inv-title{margin-bottom:12px;}
+.forge-bench{display:flex; align-items:center; justify-content:center; gap:10px; margin:4px 0 14px;}
+.forge-slot{flex:1; min-height:120px; border-radius:16px; border:1.5px dashed var(--line);
+  background:rgba(34,22,52,.5); display:flex; flex-direction:column; align-items:center;
+  justify-content:center; gap:6px; padding:10px 6px; cursor:default;
+  transition:border-color .2s ease, background .2s ease;}
+.forge-slot.filled{border-style:solid;}
+.forge-slot.base.filled{border-color:#ffd24a; background:rgba(232,185,74,.08);}
+.forge-slot.material.filled{border-color:#ff7a5c; background:rgba(255,122,92,.08);}
+.slot-cap{font-size:11px; color:var(--muted); font-weight:600;}
+.slot-empty{font-size:34px; color:var(--muted); opacity:.45; line-height:1;}
+.slot-mini{width:50px; height:50px; border-radius:12px; display:flex; align-items:center;
+  justify-content:center; border:1px solid rgba(255,255,255,.15);}
+.slot-name{font-family:"Amiri",serif; font-size:12.5px; text-align:center; line-height:1.3;}
+.slot-name b{color:var(--gold-soft);}
+.forge-anvil{font-size:26px; filter:drop-shadow(0 0 10px rgba(232,185,74,.4));}
+
+.forge-preview{border-radius:14px; border:1px solid var(--line); background:rgba(10,7,18,.45);
+  padding:8px 14px; margin-bottom:12px;}
+.prev-row,.prev-cost{display:flex; align-items:center; justify-content:space-between;
+  font-size:13.5px; padding:3px 0;}
+.prev-row span{color:var(--muted);}
+.prev-row .gain{color:#7cf0a8; font-weight:800;}
+.prev-cost{border-top:1px solid var(--line); margin-top:5px; padding-top:8px; color:var(--ink);}
+.prev-cost b{color:var(--gold-soft);}
+.prev-cost b.poor{color:#ff6a6a;}
+
+.forge-result{margin-top:12px; padding:12px 14px; border-radius:14px; text-align:center;
+  border:2px solid #7cf0a8; background:linear-gradient(180deg,var(--bg-2),var(--bg-1));
+  display:flex; flex-direction:column; gap:4px;}
+.forge-result.crit{border-color:var(--gold);}
+.fr-title{font-family:"Amiri",serif; font-size:17px; color:#7cf0a8;}
+.forge-result.crit .fr-title{color:var(--gold-soft);}
+.fr-line{font-size:13px; color:var(--ink);} .fr-line b{color:var(--gold-soft);}
+.fr-gains{font-size:12.5px; color:var(--muted);}
+
+.forge-sub{font-family:"Cairo","Amiri",sans-serif; font-size:12.5px; color:var(--muted);
+  margin:16px 2px 10px; font-weight:700;}
+
+/* badges on inventory minis */
+.inv-mini{position:relative;}
+.plus-badge{position:absolute; top:-6px; right:-6px; font-size:10px; font-weight:800; color:#1a1226;
+  background:var(--gold-soft); border-radius:8px; padding:1px 5px; box-shadow:0 1px 4px rgba(0,0,0,.5);}
+.eq-badge{position:absolute; bottom:-5px; left:-5px; font-size:10px; font-weight:800; color:#06281a;
+  background:#7cf0a8; border-radius:50%; width:17px; height:17px; display:flex;
+  align-items:center; justify-content:center;}
+.lock-badge{position:absolute; top:-6px; left:-6px; font-size:11px;}
+.inv-card.sel{background:rgba(232,185,74,.1);}
+.inv-card.locked{opacity:.62;}
+.inv-card.equipped{box-shadow:inset 0 0 0 1px #7cf0a8;}
+.inv-tag{font-size:10.5px; font-weight:800; color:#1a1226; background:#ffd24a;
+  border-radius:8px; padding:1px 8px;}
+.inv-tag.mat{background:#ff7a5c; color:#2a0d05;}
+
+/* =========================================================
+   PARTS 4 & 5 — sound toggle, monster picker, inventory
+   controls, compare overlay, reset, low-HP pulse
+   ========================================================= */
+.top-right{display:flex; align-items:center; gap:8px;}
+.icon-btn{width:34px; height:34px; border-radius:50%; border:1px solid var(--line);
+  background:rgba(10,7,18,.5); color:var(--ink); font-size:15px; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; transition:transform .12s ease;}
+.icon-btn:active{transform:scale(.94);}
+.icon-btn:focus-visible{outline:2px solid var(--gold-soft); outline-offset:2px;}
+
+/* monster picker */
+.foe-pick{margin:2px 0 12px;}
+.foe-pick-cap{font-size:11px; color:var(--muted); font-weight:600; margin:0 2px 6px; display:block;}
+.foe-list{display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; scrollbar-width:none;}
+.foe-list::-webkit-scrollbar{display:none;}
+.foe-chip{flex:0 0 auto; display:flex; align-items:center; gap:6px; white-space:nowrap;
+  padding:7px 12px; border-radius:12px; cursor:pointer; font-family:"Cairo","Amiri"; font-size:12.5px;
+  color:var(--ink); background:rgba(34,22,52,.6); border:1.5px solid transparent; transition:background .15s ease;}
+.foe-chip.active{background:rgba(34,22,52,.98); border-color:var(--line);}
+.foe-dot{width:9px; height:9px; border-radius:50%; box-shadow:0 0 8px currentColor;}
+
+/* inventory controls */
+.inv-controls{margin-bottom:12px; display:flex; flex-direction:column; gap:9px;}
+.seg{display:flex; background:rgba(10,7,18,.5); border:1px solid var(--line); border-radius:12px; overflow:hidden;}
+.seg-btn{flex:1; padding:8px 4px; border:none; background:none; cursor:pointer;
+  font-family:"Cairo","Amiri"; font-size:12px; font-weight:700; color:var(--muted); transition:background .15s ease, color .15s ease;}
+.seg-btn.on{background:rgba(232,185,74,.16); color:var(--gold-soft);}
+.chips{display:flex; flex-wrap:wrap; gap:6px;}
+.chip{padding:5px 11px; border-radius:11px; border:1px solid var(--line); cursor:pointer;
+  background:rgba(34,22,52,.55); color:var(--muted); font-family:"Cairo","Amiri"; font-size:12px; font-weight:600;}
+.chip.on{color:var(--gold-soft); border-color:var(--gold); background:rgba(232,185,74,.12);}
+.chip-sep{flex-basis:100%; height:0;}
+
+/* compare overlay card (reuses .result-overlay backdrop) */
+.compare-card{width:100%; max-width:330px; padding:18px; border-radius:18px;
+  border:2px solid var(--gold); background:linear-gradient(180deg,var(--bg-2),var(--bg-1));}
+.cmp-head{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:7px;}
+.plus-inline{color:var(--gold-soft);}
+.cmp-meta{font-size:12px; color:var(--muted); line-height:1.7; margin-bottom:12px;}
+.cmp-stats{display:flex; flex-direction:column; gap:6px; margin-bottom:16px;}
+.cmp-row{display:flex; align-items:center; gap:10px; font-size:14px;}
+.cmp-row span{flex:1; color:var(--muted);}
+.cmp-row b{color:var(--ink); min-width:46px; text-align:left;}
+.cmp-row i{font-style:normal; font-weight:800; font-size:12.5px; min-width:48px; text-align:left; color:var(--muted);}
+.cmp-row i.up{color:#7cf0a8;}
+.cmp-row i.down{color:#ff6a6a;}
+.cmp-actions{display:flex; gap:10px;}
+.cmp-actions .btn-primary,.cmp-actions .btn-secondary{margin-top:0;}
+
+/* reset save */
+.reset-btn{display:block; width:100%; margin:18px 0 4px; padding:10px; border-radius:12px;
+  background:none; border:1px solid var(--line); color:var(--muted); font-family:"Cairo","Amiri";
+  font-size:12.5px; font-weight:600; cursor:pointer; transition:color .15s ease, border-color .15s ease;}
+.reset-btn.armed{border-color:#ff6a6a; color:#ff8a7a; background:rgba(255,106,106,.08);}
+
+/* polish: low-HP pulse */
+.hp-fill.low{animation:hpPulse 1s ease-in-out infinite;}
+@keyframes hpPulse{50%{filter:brightness(1.55);}}
+
+@media (prefers-reduced-motion: reduce){
+  .icon-btn:active{transform:none;}
+  .hp-fill.low{animation:none;}
+}
+
+
+/* ambient/burst particle layer (tsParticles) — fills the arena, sits behind the fighters */
+.arena{ position:relative; }
+.fx-particles{ position:absolute; inset:0; z-index:0; pointer-events:none; overflow:hidden; }
+.fx-particles canvas{ position:absolute !important; inset:0; width:100% !important; height:100% !important; }
+
+/* =========================================================================
+   DUNGEON 2.0 — combat wave/boss bar, boss emphasis, star + loot results
+   ========================================================================= */
+.combat-top{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:8px; }
+.wave-pill{
+  padding:4px 11px; border-radius:99px; font-family:"Cairo","Amiri"; font-size:12px; font-weight:800;
+  background:rgba(232,185,74,.14); border:1px solid rgba(232,185,74,.35); color:var(--gold-soft);
+}
+.boss-pill{
+  padding:4px 11px; border-radius:99px; font-family:"Cairo","Amiri"; font-size:12px; font-weight:800; color:#ffe8c4;
+  background:linear-gradient(180deg,#b0202e,#6a1018); border:1px solid #ff6a3c; box-shadow:0 0 12px rgba(255,80,40,.4);
+}
+.monster.boss .m-body{ filter:brightness(1.12) saturate(1.25); }
+
+.res-stars{ display:flex; justify-content:center; gap:8px; margin:2px 0 12px; }
+.res-stars .rst{ font-size:30px; color:#3a3350; }
+.res-stars .rst.on{ color:var(--gold); text-shadow:0 0 14px rgba(232,185,74,.7); }
+.res-loot{ list-style:none; padding:0; margin:0 0 16px; display:flex; flex-direction:column; gap:7px; }
+.res-loot li{
+  padding:8px 12px; border-radius:11px; font-size:14px; font-weight:700; color:var(--ink);
+  background:rgba(10,7,18,.4); border:1px solid var(--line);
+}
+.res-loot li.bonus{ border-color:rgba(124,240,168,.5); background:rgba(124,240,168,.10); }
+.res-loot li.fc{ border-color:rgba(232,185,74,.5); background:rgba(232,185,74,.10); }
+.res-loot .bonus-tag{ color:#7cf0a8; font-size:11px; }
+.res-loot small{ color:var(--muted); font-size:11px; }

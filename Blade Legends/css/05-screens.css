@@ -1,0 +1,188 @@
+/* =========================================================
+   PART 6 — REDESIGN: dungeons / party / craft / sets
+   Additive only. Reuses design tokens + .knight/.monster art.
+   ========================================================= */
+
+/* panels need a positioning context for floaters + overlays */
+.panel{position:relative;}
+
+/* ---------- resource bar (materials + sound) ---------- */
+.resbar{
+  position:relative; z-index:2;
+  display:flex; align-items:center; justify-content:space-between; gap:10px;
+  padding:2px 16px 8px;
+}
+.res-mats{display:flex; gap:7px; flex-wrap:wrap;}
+.res-chip{
+  font-size:12px; font-weight:600; color:var(--ink); line-height:1;
+  background:rgba(232,185,74,.08); border:1px solid var(--line);
+  border-radius:999px; padding:4px 9px;
+}
+
+/* ---------- combat: party of three vs enemy ---------- */
+.party{display:flex; align-items:flex-end; gap:4px;}
+.hero-slot{position:relative; width:62px; height:150px; flex:0 0 auto;}
+.hero-slot .knight{
+  position:absolute; bottom:0; left:50%; margin-left:-75px;
+  transform:scale(.42); transform-origin:bottom center;
+}
+.hero-slot.sm{height:112px;}
+.knight.mini.down{filter:grayscale(.85) brightness(.5); opacity:.55; transition:filter .3s ease, opacity .3s ease;}
+
+/* shrink the boss a touch so trio + boss share the row */
+.arena .monster{transform:scale(.9); transform-origin:bottom center;}
+
+/* enemy element pill, small */
+.ebadge.sm{font-size:9px; padding:1px 6px; border-radius:7px; color:#0a0712; font-weight:800;}
+
+/* party hp mini-bars under the arena */
+.party-hp{display:flex; gap:8px; margin:2px 2px 8px;}
+.php{flex:1; min-width:0;}
+.php-name{
+  display:block; font-size:10.5px; color:var(--muted); text-align:center;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-bottom:2px;
+}
+.php.down .php-name{color:#ff6a6a;}
+.hp-track.sm{height:7px;}
+
+/* ---------- dungeon list ---------- */
+.hint{font-size:12.5px; color:var(--muted); margin:0 2px 12px; line-height:1.7;}
+.dungeon-list{display:flex; flex-direction:column; gap:10px;}
+.dungeon-card{
+  display:flex; align-items:center; gap:11px; width:100%; text-align:right;
+  padding:12px 13px; border-radius:15px; cursor:pointer; color:var(--ink);
+  font-family:"Cairo","Amiri"; border:1px solid var(--line);
+  background:linear-gradient(180deg,var(--bg-2),var(--bg-1));
+  transition:transform .12s ease, border-color .15s ease, box-shadow .15s ease;
+}
+.dungeon-card:not(.locked):active{transform:scale(.985);}
+.dungeon-card:not(.locked):hover{border-color:var(--gold); box-shadow:0 0 16px rgba(232,185,74,.12);}
+.dungeon-card.locked{opacity:.5; cursor:not-allowed;}
+.dg-dot{width:14px; height:14px; border-radius:50%; flex:0 0 auto; box-shadow:0 0 10px currentColor;}
+.dg-main{display:flex; flex-direction:column; gap:2px; flex:1; min-width:0; text-align:right;}
+.dg-name{font-family:"Amiri",serif; font-size:17px; color:var(--gold-soft); line-height:1.2;}
+.dg-name small{font-family:"Cairo","Amiri"; font-size:11px; color:var(--muted);}
+.dg-meta{font-size:11.5px; color:var(--muted);}
+.dg-reward{font-size:11.5px; color:var(--ink);}
+.dg-power{
+  flex:0 0 auto; font-size:13px; font-weight:800; color:#7cf0a8; white-space:nowrap;
+  background:rgba(124,240,168,.1); border-radius:9px; padding:4px 8px;
+}
+.dg-power.warn{color:#ff8a7a; background:rgba(255,106,106,.1);}
+.dg-lock{flex:0 0 auto; font-size:18px; opacity:.7;}
+
+/* ---------- party tab: hero cards ---------- */
+.hero-card{
+  display:flex; gap:12px; align-items:stretch;
+  padding:12px; margin-bottom:12px; border-radius:16px;
+  border:1px solid var(--line); background:linear-gradient(180deg,var(--bg-2),var(--bg-1));
+}
+.hc-info{display:flex; flex-direction:column; gap:5px; flex:1; min-width:0;}
+.hc-name{font-family:"Amiri",serif; font-size:20px; line-height:1.15;}
+.hc-sub{font-size:12px; color:var(--muted);}
+.hc-sub i{font-style:normal; font-weight:700;}
+.hc-stats{font-size:12.5px; color:var(--ink); line-height:1.5;}
+.hc-actions{display:flex; flex-direction:column; gap:6px; margin-top:4px;}
+.mini-btn{
+  width:100%; text-align:center; padding:8px 10px; border-radius:11px; cursor:pointer;
+  font-family:"Cairo","Amiri"; font-size:12px; font-weight:700;
+  border:1px solid var(--gold); color:var(--gold-soft); background:rgba(232,185,74,.1);
+  transition:filter .15s ease, transform .1s ease;
+}
+.mini-btn.alt{border-color:var(--line); color:var(--ink); background:rgba(255,255,255,.04);}
+.mini-btn:not(:disabled):active{transform:scale(.98);}
+.mini-btn:disabled{opacity:.4; cursor:not-allowed;}
+
+/* ---------- set cards + grid (swap overlay + craft pool) ---------- */
+.swap-card{
+  width:100%; max-width:340px; max-height:80vh; overflow-y:auto; padding:18px;
+  border-radius:18px; border:2px solid var(--gold);
+  background:linear-gradient(180deg,var(--bg-2),var(--bg-1));
+}
+.swap-title{font-family:"Amiri",serif; font-size:21px; color:var(--gold-soft); text-align:center; margin-bottom:14px;}
+.set-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:9px; margin-bottom:14px;}
+.set-card{
+  display:flex; flex-direction:column; align-items:center; gap:5px;
+  padding:10px 6px; border-radius:13px; cursor:pointer;
+  border:2px solid var(--line); background:rgba(10,7,18,.4);
+  transition:transform .12s ease, box-shadow .15s ease;
+}
+.set-card.display{cursor:default;}
+.set-card:not(.display):active{transform:scale(.96);}
+.set-card:not(.display):hover{box-shadow:0 0 14px rgba(232,185,74,.18);}
+.set-mini{width:38px; height:38px; border-radius:50%; box-shadow:0 2px 8px rgba(0,0,0,.5);}
+.set-name{font-family:"Amiri",serif; font-size:13.5px; text-align:center; line-height:1.15;}
+.set-meta{font-size:11px;}
+
+/* ---------- craft: tier picker ---------- */
+.tier-pick{display:grid; grid-template-columns:repeat(2,1fr); gap:8px; margin:6px 0 14px;}
+.tier-btn{
+  display:flex; align-items:center; justify-content:center; gap:7px;
+  padding:11px; border-radius:13px; cursor:pointer;
+  font-family:"Cairo","Amiri"; font-size:14px; font-weight:700; color:var(--ink);
+  border:1px solid var(--line); background:linear-gradient(180deg,var(--bg-2),var(--bg-1));
+  transition:border-color .15s ease, box-shadow .15s ease, transform .1s ease;
+}
+.tier-btn:active{transform:scale(.98);}
+.tier-btn.on{border-color:var(--gold); color:var(--gold-soft); box-shadow:0 0 14px rgba(232,185,74,.18);}
+.tier-dot{width:12px; height:12px; border-radius:50%; box-shadow:0 0 8px currentColor;}
+
+/* compact empty-state inside overlays + muted lose text */
+.placeholder.small{padding:16px 8px; min-height:0;}
+.placeholder.small p{font-size:13px; color:var(--muted);}
+.res-reward.muted{color:var(--muted); font-weight:600; font-size:13.5px;}
+
+/* prev-cost insufficient-funds state (reused from forge) */
+.prev-cost b.poor{color:#ff6a6a;}
+
+/* reduced-motion: neutralize the interactions added above */
+@media (prefers-reduced-motion: reduce){
+  .dungeon-card,.mini-btn,.set-card,.tier-btn,.knight.mini.down{transition:none;}
+  .dungeon-card:not(.locked):active,.mini-btn:not(:disabled):active,
+  .set-card:not(.display):active,.tier-btn:active{transform:none;}
+}
+
+
+/* =========================================================================
+   DUNGEON 2.0 — list stars, preview/difficulty panel, affix chips
+   ========================================================================= */
+.dg-stars{ display:flex; align-items:center; gap:1px; margin-top:3px; font-size:12px; }
+.dg-stars .st{ color:#463b5e; }
+.dg-stars .st.on{ color:var(--gold); text-shadow:0 0 6px rgba(232,185,74,.5); }
+.dg-stars small{ color:var(--muted); margin-right:6px; font-size:10.5px; }
+
+.preview-card{
+  width:100%; max-width:380px; max-height:88vh; overflow-y:auto; padding:20px; text-align:center;
+  border-radius:18px; border:2px solid var(--gold); background:linear-gradient(180deg,var(--bg-2),var(--bg-1));
+}
+.pv-dot{ display:inline-block; width:38px; height:38px; border-radius:50%; box-shadow:0 0 18px currentColor; margin-bottom:4px; }
+.pv-title{ font-family:"Amiri",serif; font-size:24px; color:var(--gold-soft); margin:2px 0; }
+.pv-sub{ font-size:12.5px; color:var(--muted); margin:2px 0 14px; }
+.pv-sub small{ color:var(--muted); }
+.pv-diffs{ display:flex; gap:8px; margin-bottom:13px; }
+.pv-diff{
+  flex:1; padding:9px 6px; border-radius:12px; cursor:pointer; color:var(--ink);
+  border:1.5px solid var(--line); background:rgba(34,22,52,.5); font-family:"Cairo","Amiri";
+  display:flex; flex-direction:column; align-items:center; gap:3px; transition:border-color .15s ease, background .15s ease;
+}
+.pvd-name{ font-weight:800; font-size:13px; }
+.pvd-stars{ font-size:10px; color:#463b5e; letter-spacing:1px; }
+.pvd-stars .on{ color:var(--gold); }
+.pv-diff.sel{ border-color:var(--gold); background:linear-gradient(180deg,rgba(232,185,74,.18),rgba(232,185,74,.05)); }
+.pv-diff.locked{ opacity:.5; cursor:not-allowed; }
+.pv-affixes{ display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:6px; margin-bottom:12px; }
+.pv-label{ font-size:12px; color:var(--gold-soft); font-weight:700; }
+.affix-chip{
+  display:inline-flex; align-items:center; gap:3px; padding:3px 9px; border-radius:99px;
+  background:rgba(255,90,60,.14); border:1px solid rgba(255,120,90,.4); color:#ffb3a0; font-size:11.5px; font-weight:700;
+}
+.affix-chip.sm{ font-size:10.5px; padding:2px 7px; }
+.pv-row{ display:flex; justify-content:space-between; align-items:center; padding:10px 12px; border-radius:12px; background:rgba(10,7,18,.4); margin-bottom:8px; font-size:13px; }
+.pv-row b{ color:var(--gold-soft); }
+.pv-row b.warn{ color:#ff8a6a; }
+.pv-vs{ color:var(--muted); font-size:12px; }
+.pv-warn{ color:#ff8a6a; font-size:12px; margin:0 0 10px; }
+.pv-reward{ font-size:13px; color:var(--ink); line-height:1.7; margin-bottom:14px; }
+.pv-reward small{ color:var(--muted); font-size:11px; }
+.preview-card .btn-primary,.preview-card .btn-secondary{ width:100%; }
+.preview-card .btn-primary{ margin-bottom:8px; }
